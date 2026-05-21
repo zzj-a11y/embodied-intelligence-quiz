@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>具身智能刷题</title>
+<style>
+/* =============================================
+   1. CSS Reset + Variables
+   ============================================= */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --primary: #1976d2;
+  --primary-light: #e3f2fd;
+  --correct: #2e7d32;
+  --correct-light: #e8f5e9;
+  --wrong: #e53935;
+  --wrong-light: #ffebee;
+  --wrong-emphasis: #e65100;
+  --bg: #f5f5f5;
+  --card: #ffffff;
+  --text: #333333;
+  --text-secondary: #888888;
+  --border: #e0e0e0;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* =============================================
+   2. Body + App Container
+   ============================================= */
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  display: flex;
+  justify-content: center;
+}
+
+#app {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100vh;
+  position: relative;
+  background-color: var(--bg);
+}
+
+/* =============================================
+   3. View Switching
+   ============================================= */
+.view {
+  display: none;
+  padding: 16px 16px 100px 16px;
+}
+
+.view.active {
+  display: block;
+}
+
+/* =============================================
+   4. Bottom Navigation
+   ============================================= */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background-color: var(--card);
+  border-top: 1px solid var(--border);
+  padding: 8px 0 calc(8px + var(--safe-bottom));
+  z-index: 50;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  cursor: pointer;
+  padding: 4px 12px;
+  color: var(--text-secondary);
+  transition: color 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.nav-item.active {
+  color: var(--primary);
+}
+
+.nav-icon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.nav-label {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* =============================================
+   5. Quiz View
+   ============================================= */
+.quiz-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+#quiz-category {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary);
+  background: var(--primary-light);
+  padding: 4px 12px;
+  border-radius: 12px;
+}
+
+#quiz-progress-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.progress-bar {
+  width: 100%;
+  height: 4px;
+  background-color: var(--border);
+  border-radius: 2px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: var(--primary);
+  border-radius: 2px;
+  width: 0%;
+  transition: width 0.4s ease;
+}
+
+#quiz-question {
+  font-size: 17px;
+  line-height: 1.6;
+  font-weight: 500;
+  margin-bottom: 20px;
+  padding: 0 4px;
+}
+
+#quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.quiz-option {
+  padding: 16px;
+  min-height: 48px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  font-size: 16px;
+  background-color: var(--card);
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+  text-align: left;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  color: var(--text);
+}
+
+.quiz-option:active {
+  transform: scale(0.98);
+}
+
+/* =============================================
+   6. Option States
+   ============================================= */
+.quiz-option.correct {
+  background-color: var(--correct-light);
+  border-color: var(--correct);
+  color: var(--correct);
+}
+
+.quiz-option.wrong {
+  background-color: var(--wrong-light);
+  border-color: var(--wrong);
+  color: var(--wrong);
+}
+
+.quiz-option.dimmed {
+  opacity: 0.4;
+}
+
+.quiz-option.disabled {
+  pointer-events: none;
+}
+
+/* =============================================
+   7. Result Box
+   ============================================= */
+#quiz-result {
+  display: none;
+  padding: 14px;
+  border-radius: 12px;
+  margin-top: 16px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+#quiz-result.show {
+  display: block;
+}
+
+#quiz-result.correct-result {
+  background-color: var(--correct-light);
+  color: var(--correct);
+}
+
+#quiz-result.wrong-result {
+  background-color: var(--wrong-light);
+  color: var(--wrong);
+}
+
+/* =============================================
+   8. Buttons
+   ============================================= */
+.btn-primary {
+  display: block;
+  width: 100%;
+  padding: 16px;
+  font-size: 18px;
+  font-weight: 600;
+  min-height: 48px;
+  background-color: var(--primary);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  margin-top: 16px;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+  background-color: #1565c0;
+}
+
+.btn-outline-primary {
+  display: inline-block;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  min-height: 40px;
+  background-color: var(--card);
+  color: var(--primary);
+  border: 2px solid var(--primary);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-outline-primary:active {
+  background-color: var(--primary-light);
+}
+
+.btn-outline-danger {
+  display: inline-block;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  background-color: var(--card);
+  color: var(--wrong);
+  border: 1.5px solid var(--wrong);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-outline-danger:active {
+  background-color: var(--wrong-light);
+}
+
+.btn-danger {
+  display: block;
+  width: 100%;
+  padding: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  min-height: 48px;
+  background-color: var(--wrong);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  margin-top: 16px;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.btn-danger:active {
+  transform: scale(0.98);
+  background-color: #c62828;
+}
+
+/* =============================================
+   9. Home View
+   ============================================= */
+.home-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.home-subtitle {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.progress-card {
+  background-color: var(--primary-light);
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.progress-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.progress-card-label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.progress-card-pct {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.home-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--card);
+  border-radius: 10px;
+  padding: 14px 8px;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:active {
+  transform: scale(0.97);
+}
+
+.stat-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* =============================================
+   10. Stats View
+   ============================================= */
+.stats-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.stats-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.category-stat {
+  background-color: var(--card);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.category-stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.category-stat-name {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.category-stat-count {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.category-stat .progress-bar {
+  margin-bottom: 0;
+}
+
+/* =============================================
+   11. Wrong Answers View
+   ============================================= */
+.wrong-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.wrong-header h2 {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+#wrong-count {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+#wrong-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.wrong-item {
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  padding: 14px;
+  border-radius: 12px;
+  position: relative;
+}
+
+.wrong-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 6px;
+}
+
+.wrong-item-question {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+  margin-bottom: 8px;
+  padding-right: 24px;
+}
+
+.wrong-item-remove {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  color: var(--wrong);
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 2px 6px;
+  border: none;
+  background: none;
+}
+
+.wrong-item-answers {
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.wrong-item-answers .your {
+  color: var(--wrong);
+  font-weight: 500;
+}
+
+.wrong-item-answers .correct {
+  color: var(--correct);
+  font-weight: 500;
+}
+
+/* =============================================
+   12. Category Filter Modal
+   ============================================= */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 100;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-overlay.show {
+  display: flex;
+}
+
+.modal {
+  background-color: var(--card);
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 380px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.modal-option {
+  padding: 14px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;
+  font-size: 15px;
+  margin-bottom: 8px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.modal-option:last-child {
+  margin-bottom: 0;
+}
+
+.modal-option.selected {
+  border-color: var(--primary);
+  background-color: var(--primary-light);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.modal-close {
+  display: block;
+  width: 100%;
+  margin-top: 16px;
+  padding: 12px;
+  font-size: 15px;
+  background-color: var(--bg);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  color: var(--text-secondary);
+}
+
+/* =============================================
+   Quick-start cards (home view)
+   ============================================= */
+.quick-card {
+  background-color: var(--card);
+  border-radius: 10px;
+  padding: 16px;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+.quick-card:active {
+  transform: scale(0.97);
+}
+
+.quick-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.quick-card-icon {
+  font-size: 28px;
+  margin-bottom: 6px;
+}
+
+.quick-card-label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.quick-card-sub {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- =========================================
+       Home View
+       ========================================= -->
+  <div id="view-home" class="view active">
+    <div class="home-title">具身智能刷题</div>
+    <div class="home-subtitle">具深学习，智能备考</div>
+
+    <div class="progress-card">
+      <div class="progress-card-header">
+        <span class="progress-card-label">刷题进度</span>
+        <span class="progress-card-pct" id="home-pct">0%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="home-progress-bar" style="width: 0%;"></div>
+      </div>
+      <span style="font-size:12px;color:var(--text-secondary);" id="home-progress-detail"></span>
+    </div>
+
+    <div class="home-grid">
+      <div class="quick-card">
+        <div class="quick-card-icon">📝</div>
+        <div class="quick-card-label">开始刷题</div>
+        <div class="quick-card-sub">练习模式</div>
+      </div>
+      <div class="quick-card">
+        <div class="quick-card-icon">🎯</div>
+        <div class="quick-card-label">考试模式</div>
+        <div class="quick-card-sub">模拟测验</div>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <span class="stat-value" id="home-total">0</span>
+        <span class="stat-label">总题数</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value" id="home-correct">0</span>
+        <span class="stat-label">正确率</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value" id="home-wrong">0</span>
+        <span class="stat-label">错题数</span>
+      </div>
+    </div>
+
+    <div style="margin-top: 16px;">
+      <button class="btn-outline-primary" style="width:100%;" id="home-select-category">选择题库分类</button>
+    </div>
+  </div>
+
+  <!-- =========================================
+       Quiz View
+       ========================================= -->
+  <div id="view-quiz" class="view">
+    <div class="quiz-header">
+      <span id="quiz-category">Python基础</span>
+      <span id="quiz-progress-text"></span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="quiz-progress-bar"></div>
+    </div>
+    <div id="quiz-question"></div>
+    <div id="quiz-options"></div>
+    <div id="quiz-result"></div>
+    <button id="quiz-next-btn" class="btn-primary" style="display:none;">下一题 →</button>
+  </div>
+
+  <!-- =========================================
+       Stats View
+       ========================================= -->
+  <div id="view-stats" class="view">
+    <div class="stats-title">刷题统计</div>
+    <div class="stats-summary">
+      <div class="stat-card">
+        <span class="stat-value" id="stats-total">0</span>
+        <span class="stat-label">总答题数</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value" id="stats-correct">0</span>
+        <span class="stat-label">正确数</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value" id="stats-pct">0%</span>
+        <span class="stat-label">正确率</span>
+      </div>
+    </div>
+    <div id="stats-per-category">
+      <p style="text-align:center;padding:20px;color:var(--text-secondary);">统计加载中...</p>
+    </div>
+  </div>
+
+  <!-- =========================================
+       Wrong Answers View
+       ========================================= -->
+  <div id="view-wrong" class="view">
+    <div class="wrong-header">
+      <h2>错题薄</h2>
+      <button id="clear-all-btn" class="btn-outline-danger">清空全部</button>
+    </div>
+    <p id="wrong-count"></p>
+    <div id="wrong-list"></div>
+    <button id="redo-all-btn" class="btn-danger">重做全部错题</button>
+  </div>
+
+  <!-- =========================================
+       Category Filter Modal
+       ========================================= -->
+  <div class="modal-overlay" id="category-modal">
+    <div class="modal">
+      <div class="modal-title">选择题库</div>
+      <div id="modal-options"></div>
+      <button class="modal-close" id="modal-close-btn">关闭</button>
+    </div>
+  </div>
+
+  <!-- =========================================
+       Bottom Navigation
+       ========================================= -->
+  <nav class="bottom-nav">
+    <div class="nav-item active" data-view="home">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">首页</span>
+    </div>
+    <div class="nav-item" data-view="quiz">
+      <span class="nav-icon">📝</span>
+      <span class="nav-label">刷题</span>
+    </div>
+    <div class="nav-item" data-view="stats">
+      <span class="nav-icon">📊</span>
+      <span class="nav-label">统计</span>
+    </div>
+    <div class="nav-item" data-view="wrong">
+      <span class="nav-icon">📋</span>
+      <span class="nav-label">错题</span>
+    </div>
+  </nav>
+</div>
+
+<script>
+// ============================================================
+// TASK 3: 核心刷题引擎
+// ============================================================
+
+// 嵌入式题目数据 (来自 questions_structured.json)
+const ALL_QUESTIONS = [{"id":1,"category":"Python基础","question":"在Python中，以下哪个函数用于输出内容到控制台？","options":{"A":"print()","B":"input()","C":"output()","D":"write()"},"answer":"A","explanation":"print()函数用于将指定内容输出到标准输出设备（通常是控制 台）。"},{"id":2,"category":"Python基础","question":"以下哪个符号用于在Python中定义单行注释？","options":{"A":"//","B":"#","C":"/*","D":"<!--"},"answer":"B","explanation":"Python使用井号（#）表示单行注释，其后的内容不会被解释器执 行。"},{"id":3,"category":"Python基础","question":"Python中用于接收用户输入的函数是：","options":{"A":"input()","B":"get()","C":"read()","D":"scan()"},"answer":"A","explanation":"input()函数用于从标准输入（通常是键盘）读取一行文本，并返回 字符串。"},{"id":4,"category":"Python基础","question":"下列哪个选项是合法的Python变量名？","options":{"A":"2var","B":"var-name","C":"var","D":"var.name"},"answer":"C","explanation":"变量名不能以数字开头，不能包含连字符（-）或点号（.），但可 以以下划线（）开头。"},{"id":5,"category":"Python基础","question":"Python中用于表示“空”或“无”的特殊常量是：","options":{"A":"NULL","B":"null","C":"None","D":"NaN"},"answer":"C","explanation":"Python中使用None来表示空值或不存在的对象，其布尔值为 False。"},{"id":6,"category":"Python基础","question":"以下哪个运算符用于求余数？","options":{"A":"/","B":"//","C":"%","D":"**"},"answer":"C","explanation":"%是取模运算符，用于返回除法的余数，例如5%2结果为1。"},{"id":7,"category":"Python基础","question":"表达式10//3的结果是：","options":{"A":"3.33","B":"3","C":"4","D":"1"},"answer":"B","explanation":"//是整除运算符（地板除），返回商的整数部分，向下取整。"},{"id":8,"category":"Python基础","question":"下列哪个数据类型是不可变的？","options":{"A":"列表","B":"字典","C":"元组","D":"集合"},"answer":"C","explanation":"元组（tuple）是不可变序列，创建后不能修改元素，而列表、字 典、集合都是可变的。"},{"id":9,"category":"Python基础","question":"用于存储键值对的数据结构是：","options":{"A":"列表","B":"元组","C":"字典","D":"集合"},"answer":"C","explanation":"字典（dict）是一种可变容器模型，可以存储任意类型的对象，通 过键（key）来存取值（value）。"},{"id":10,"category":"Python基础","question":"以下哪个方法可以向列表末尾添加一个元素？","options":{"A":"append()","B":"add()","C":"insert()","D":"push()"},"answer":"A","explanation":"list.append(x)将元素x添加到列表的末尾。"},{"id":11,"category":"Python基础","question":"用于删除列表中第一个匹配项的方法是：","options":{"A":"remove()","B":"pop()","C":"del","D":"clear()"},"answer":"A","explanation":"list.remove(x)删除列表中第一个值为x的元素，若不存在则报 错。"},{"id":12,"category":"Python基础","question":"以下哪个方法可以获取字典中所有的键？","options":{"A":"keys()","B":"values()","C":"items()","D":"get()"},"answer":"A","explanation":"dict.keys()返回字典中所有键的视图对象。"},{"id":13,"category":"Python基础","question":"用于判断键是否在字典中的操作符是：","options":{"A":"in","B":"has","C":"contains","D":"exist"},"answer":"A","explanation":"使用in操作符可以检查某个键是否存在于字典中，例如'key'in my_dict。"},{"id":14,"category":"Python基础","question":"以下哪个语句用于定义函数？","options":{"A":"def","B":"func","C":"define","D":"function"},"answer":"A","explanation":"Python使用def关键字定义函数，后接函数名和参数列表。"},{"id":15,"category":"Python基础","question":"函数中用于返回结果并结束函数执行的关键字是：","options":{"A":"back","B":"return","C":"exit","D":"break"},"answer":"B","explanation":"return语句用于从函数返回一个值，并终止函数的执行。"},{"id":16,"category":"Python基础","question":"以下哪个是正确的if语句格式？","options":{"A":"ifx>5:","B":"ifx>5","C":"if(x>5)","D":"ifx>5then"},"answer":"A","explanation":"Python中if语句后跟条件表达式，以冒号（:）结尾，不需要括 号。"},{"id":17,"category":"Python基础","question":"用于实现多分支选择的关键词是：","options":{"A":"elif","B":"elseif","C":"elseif","D":"switch"},"answer":"A","explanation":"Python中使用elif来实现多个条件分支，等同于其他语言的else if。"},{"id":18,"category":"Python基础","question":"以下哪个循环用于遍历序列？","options":{"A":"for","B":"while","C":"do-while","D":"loop"},"answer":"A","explanation":"for循环通常用于遍历列表、元组、字符串等可迭代对象。"},{"id":19,"category":"Python基础","question":"用于跳出当前循环的语句是：","options":{"A":"break","B":"continue","C":"pass","D":"return"},"answer":"A","explanation":"break语句用于立即终止最内层的循环。"},{"id":20,"category":"Python基础","question":"跳过当前循环剩余语句并进入下一次循环的语句是：","options":{"A":"break","B":"continue","C":"pass","D":"skip"},"answer":"B","explanation":"continue语句用于跳过当前迭代的剩余代码，直接进入下一次循 环。"},{"id":21,"category":"Python基础","question":"以下哪个异常处理结构是正确的？","options":{"A":"try-except","B":"try-catch","C":"try-finally","D":"A和C都对"},"answer":"D","explanation":"Python支持try-except捕获异常，也支持try-finally确保代码执 行，还可组合使用。"},{"id":22,"category":"Python基础","question":"用于打开文件的内置函数是：","options":{"A":"open()","B":"file()","C":"read()","D":"write()"},"answer":"A","explanation":"open()函数用于打开一个文件，并返回一个文件对象。"},{"id":23,"category":"Python基础","question":"以只读模式打开文本文件的模式是：","options":{"A":"'r'","B":"'w'","C":"'a'","D":"'rb'"},"answer":"A","explanation":"'r'表示以只读方式打开文本文件，文件必须存在。"},{"id":24,"category":"Python基础","question":"以下哪个模块提供了数学运算函数？","options":{"A":"math","B":"random","C":"os","D":"sys"},"answer":"A","explanation":"math模块提供了许多数学函数和常量，如sin()、sqrt()、pi等。"},{"id":25,"category":"Python基础","question":"用于生成随机数的模块是：","options":{"A":"random","B":"math","C":"number","D":"numpy"},"answer":"A","explanation":"random模块提供了生成随机数的函数，如random.randint()、 random.random()。"},{"id":26,"category":"Python基础","question":"用于处理日期和时间的模块是：","options":{"A":"time","B":"datetime","C":"date","D":"以上都是"},"answer":"D","explanation":"Python中time、datetime、date模块都可用于处理时间相关操作。"},{"id":27,"category":"Python基础","question":"以下哪个是正确的列表定义方式？","options":{"A":"[1,2,3]","B":"(1,2,3)","C":"{1,2,3}","D":"\"1,2,3\""},"answer":"A","explanation":"列表使用方括号[]定义，元素之间用逗号分隔。"},{"id":28,"category":"Python基础","question":"以下哪个是元组的定义方式？","options":{"A":"[1,2,3]","B":"(1,2,3)","C":"{1,2,3}","D":"<1,2,3>"},"answer":"B","explanation":"元组使用圆括号()定义。"},{"id":29,"category":"Python基础","question":"以下哪个是集合的定义方式？","options":{"A":"[1,2,3]","B":"(1,2,3)","C":"{1,2,3}","D":"\"1,2,3\""},"answer":"C","explanation":"集合使用花括号{}定义，注意空集合需用set()创建。"},{"id":30,"category":"Python基础","question":"字符串格式化中，以下哪种方式是推荐的（Python3.6+）？","options":{"A":"%","B":".format()","C":"f-string","D":"join()"},"answer":"C","explanation":"f-string（如f\"Hello{name}\"）是Python3.6引入的，性能高且 易读，是当前推荐方式。"},{"id":31,"category":"Python基础","question":"以下哪个方法可以将字符串转换为小写？","options":{"A":"lower()","B":"upper()","C":"strip()","D":"replace()"},"answer":"A","explanation":"str.lower()返回字符串的小写版本。"},{"id":32,"category":"Python基础","question":"去除字符串首尾空白字符的方法是：","options":{"A":"strip()","B":"trim()","C":"clean()","D":"remove()"},"answer":"A","explanation":"str.strip()用于移除字符串首尾的空白字符（包括空格、换行、制 表符）。"},{"id":33,"category":"Python基础","question":"用于分割字符串的方法是：","options":{"A":"split()","B":"join()","C":"slice()","D":"partition()"},"answer":"A","explanation":"str.split(sep)按照指定分隔符将字符串分割成列表。"},{"id":34,"category":"Python基础","question":"用于连接字符串的方法是：","options":{"A":"join()","B":"concat()","C":"merge()","D":"link()"},"answer":"A","explanation":"sep.join(iterable)使用指定分隔符连接序列中的字符串。"},{"id":35,"category":"Python基础","question":"以下哪个关键字用于定义类？","options":{"A":"class","B":"def","C":"object","D":"init"},"answer":"A","explanation":"Python使用class关键字定义类，后接类名。"},{"id":36,"category":"Python基础","question":"类中用于初始化对象的特殊方法是：","options":{"A":"init()","B":"main()","C":"str()","D":"new()"},"answer":"A","explanation":"init()方法在创建对象时自动调用，用于初始化对象的属性。"},{"id":37,"category":"Python基础","question":"以下哪个是私有属性的定义方式？","options":{"A":"_var","B":"var","C":"privatevar","D":"var"},"answer":"B","explanation":"在Python中，以双下划线开头的属性（如__var）被视为私有属 性，外部难以直接访问。"},{"id":38,"category":"Python基础","question":"实现继承时，子类如何调用父类的构造方法？","options":{"A":"super().init()","B":"parent().init()","C":"self.parent()","D":"base().init()"},"answer":"A","explanation":"super()函数用于调用父类的方法，通常在子类构造函数中调用父类 构造函数。"},{"id":39,"category":"Python基础","question":"以下哪个是正确的导入模块方式？","options":{"A":"importmath","B":"frommathimportsqrt","C":"importmathasm","D":"以上都对"},"answer":"D","explanation":"Python支持多种导入方式，可根据需要选择。"},{"id":40,"category":"Python基础","question":"以下哪个不是Python的关键字？","options":{"A":"def","B":"class","C":"function","D":"return"},"answer":"C","explanation":"function不是Python关键字，定义函数使用def。"},{"id":41,"category":"Python基础","question":"以下哪个表达式的值为True？","options":{"A":"5>3and2<1","B":"notTrue","C":"5==5","D":"10!=10"},"answer":"C","explanation":"5==5为True，其他选项均为False。"},{"id":42,"category":"Python基础","question":"以下哪个方法可以获取列表长度？","options":{"A":"len()","B":"length()","C":"size()","D":"count()"},"answer":"A","explanation":"len()是内置函数，用于返回对象（如列表、字符串）的长度。"},{"id":43,"category":"Python基础","question":"以下哪个方法可以对列表进行排序？","options":{"A":"sort()","B":"sorted()","C":"order()","D":"A和B都对"},"answer":"D","explanation":"list.sort()是列表方法，直接修改原列表；sorted()是内置函数， 返回新列表。"},{"id":44,"category":"Python基础","question":"以下哪个操作会引发IndexError？","options":{"A":"访问列表不存在的索引","B":"访问字典不存在的键","C":"除以0","D":"类型错误"},"answer":"A","explanation":"IndexError发生在尝试访问列表、元组等序列中不存在的索引时。"},{"id":45,"category":"Python基础","question":"以下哪个异常是“除以零”引发的？","options":{"A":"ValueError","B":"TypeError","C":"ZeroDivisionError","D":"NameError"},"answer":"C","explanation":"当除法或取模运算的除数为0时，会引发ZeroDivisionError。"},{"id":46,"category":"Python基础","question":"以下哪个方法可以将字符串转换为整数？","options":{"A":"int()","B":"str()","C":"float()","D":"chr()"},"answer":"A","explanation":"int()函数可将数字字符串或数字转换为整数类型。"},{"id":47,"category":"Python基础","question":"以下哪个方法可以将整数转换为字符串？","options":{"A":"str()","B":"int()","C":"string()","D":"chr()"},"answer":"A","explanation":"str()函数用于将对象转换为字符串形式。"},{"id":48,"category":"Python基础","question":"以下哪个是正确的lambda函数定义？","options":{"A":"lambdax:x*2","B":"deflambda(x):returnx2","C":"lambda(x):x2","D":"createlambdax:x*2"},"answer":"A","explanation":"lambda表达式语法为lambda参数:表达式，返回一个函数对象。"},{"id":49,"category":"Python基础","question":"以下哪个函数可以将函数应用于可迭代对象的每个元素？","options":{"A":"map()","B":"filter()","C":"reduce()","D":"apply()"},"answer":"A","explanation":"map(func,iterable)对iterable中的每个元素应用func，并返回 map对象。"},{"id":50,"category":"Python基础","question":"以下哪个函数用于过滤可迭代对象中的元素？","options":{"A":"map()","B":"filter()","C":"zip()","D":"enumerate()"},"answer":"B","explanation":"filter(func,iterable)根据func的返回值（True/False）过滤元 素。"},{"id":51,"category":"Python基础","question":"以下哪个函数可以将多个可迭代对象“打包”？","options":{"A":"zip()","B":"map()","C":"filter()","D":"join()"},"answer":"A","explanation":"zip(*iterables)将多个可迭代对象对应位置的元素组合成元组。"},{"id":52,"category":"Python基础","question":"以下哪个函数可以同时获取索引和值？","options":{"A":"range()","B":"enumerate()","C":"zip()","D":"iter()"},"answer":"B","explanation":"enumerate(iterable)返回一个枚举对象，包含索引和对应的值。"},{"id":53,"category":"Python基础","question":"以下哪个模块用于处理命令行参数？","options":{"A":"sys","B":"argparse","C":"getopt","D":"以上都是"},"answer":"D","explanation":"sys.argv可获取参数，argparse是更强大的解析工具，getopt用于 C风格参数。"},{"id":54,"category":"Python基础","question":"以下哪个属性可以获取模块的名称？","options":{"A":"name","B":"file","C":"doc","D":"class"},"answer":"A","explanation":"每个模块都有__name__属性，主模块为'main'。"},{"id":55,"category":"Python基础","question":"以下哪个是正确的文件读取方式？","options":{"A":"read()","B":"readline()","C":"readlines()","D":"以上都是"},"answer":"D","explanation":"read()读全部，readline()读一行，readlines()读所有行并返回列 表。"},{"id":56,"category":"Python基础","question":"以下哪个模式会覆盖原文件内容？","options":{"A":"'w'","B":"'a'","C":"'r+'","D":"'x'"},"answer":"A","explanation":"'w'模式打开文件用于写入，如果文件存在则覆盖，不存在则创建。"},{"id":57,"category":"Python基础","question":"以下哪个方法可以创建新目录？","options":{"A":"os.mkdir()","B":"os.makedirs()","C":"os.create_dir()","D":"A和B都对"},"answer":"D","explanation":"os.mkdir()创建单级目录，os.makedirs()可创建多级目录。"},{"id":58,"category":"Python基础","question":"以下哪个方法可以检查文件是否存在？","options":{"A":"os.path.exists()","B":"os.path.isfile()","C":"pathlib.Path.exists()","D":"以上都是"},"answer":"D","explanation":"多种方式均可检查文件或路径是否存在。"},{"id":59,"category":"Python基础","question":"以下哪个不是可迭代对象？","options":{"A":"list","B":"tuple","C":"int","D":"str"},"answer":"C","explanation":"整数（int）不是可迭代对象，不能用于for循环遍历。"},{"id":60,"category":"Python基础","question":"以下哪个方法可以获取对象的类型？","options":{"A":"type()","B":"isinstance()","C":"id()","D":"A和B都对"},"answer":"D","explanation":"type()返回对象的类型，isinstance()检查对象是否为指定类型。"},{"id":61,"category":"Python基础","question":"以下哪个表达式可以判断x是否为偶数？","options":{"A":"x%2==0","B":"x%2==1","C":"x/2==0","D":"x//2==0"},"answer":"A","explanation":"偶数除以2的余数为0。"},{"id":62,"category":"Python基础","question":"以下哪个是深拷贝？","options":{"A":"copy.copy()","B":"copy.deepcopy()","C":"=","D":"slice[:]"},"answer":"B","explanation":"深拷贝会递归复制对象及其包含的所有子对象，完全独立。"},{"id":63,"category":"Python基础","question":"以下哪个是浅拷贝？","options":{"A":"copy.copy()","B":"copy.deepcopy()","C":"=","D":"以上都不是"},"answer":"A","explanation":"浅拷贝只复制对象本身，但其子对象仍引用原对象的子对象。"},{"id":64,"category":"Python基础","question":"以下哪个方法可以删除字典中的所有元素？","options":{"A":"clear()","B":"remove()","C":"pop()","D":"del"},"answer":"A","explanation":"dict.clear()清空字典所有键值对。"},{"id":65,"category":"Python基础","question":"以下哪个方法可以获取字典中指定键的值，若键不存在返回默认值？","options":{"A":"get()","B":"items()","C":"keys()","D":"values()"},"answer":"A","explanation":"dict.get(key,default)安全地获取值，避免KeyError。"},{"id":66,"category":"Python基础","question":"以下哪个是正确的列表推导式？","options":{"A":"[x2forxinrange(5)]","B":"[forxinrange(5):x2]","C":"list(x2forxinrange(5))","D":"[xinrange(5)forx2]"},"answer":"A","explanation":"列表推导式语法为[表达式for变量in可迭代对象]。"},{"id":67,"category":"Python基础","question":"以下哪个是字典推导式？","options":{"A":"{x:x2forxinrange(5)}","B":"{forxinrange(5):x2}","C":"dict(x:x2forxinrange(5))","D":"{xinrange(5):x2}"},"answer":"A","explanation":"字典推导式语法为{键表达式:值表达式for变量in可迭代对 象}。"},{"id":68,"category":"Python基础","question":"以下哪个是生成器表达式？","options":{"A":"(x2forxinrange(5))","B":"[x2forxinrange(5)]","C":"{x2forxinrange(5)}","D":"gen(x2forxinrange(5))"},"answer":"A","explanation":"生成器表达式使用圆括号，返回生成器对象，节省内存。"},{"id":69,"category":"Python基础","question":"以下哪个方法可以将迭代器向前移动一位？","options":{"A":"next()","B":"iter()","C":"send()","D":"throw()"},"answer":"A","explanation":"next(iterator)用于获取迭代器的下一个值。"},{"id":70,"category":"Python基础","question":"以下哪个是正确的异常捕获语法？","options":{"A":"exceptValueErrorase:","B":"catchValueError:","C":"handleException:","D":"errorValueError:"},"answer":"A","explanation":"exceptExceptionTypeasvariable:是标准的异常捕获语法。"},{"id":71,"category":"Python基础","question":"以下哪个模块用于正则表达式？","options":{"A":"re","B":"regex","C":"regexp","D":"match"},"answer":"A","explanation":"re模块提供了Perl风格的正则表达式操作。"},{"id":72,"category":"Python基础","question":"以下哪个方法用于匹配字符串开头？","options":{"A":"re.match()","B":"re.search()","C":"re.find()","D":"re.start()"},"answer":"A","explanation":"re.match()只从字符串的起始位置匹配，匹配成功返回Match对 象。"},{"id":73,"category":"Python基础","question":"以下哪个方法可以在字符串中搜索正则表达式？","options":{"A":"re.search()","B":"re.match()","C":"re.find()","D":"re.locate()"},"answer":"A","explanation":"re.search()会在整个字符串中搜索模式，找到第一个匹配即返回。"},{"id":74,"category":"Python基础","question":"以下哪个方法用于替换字符串？","options":{"A":"replace()","B":"sub()","C":"change()","D":"swap()"},"answer":"A","explanation":"str.replace(old,new)用于字符串替换。"},{"id":75,"category":"Python基础","question":"以下哪个是Python的包管理工具？","options":{"A":"pip","B":"conda","C":"easy_install","D":"以上都是"},"answer":"D","explanation":"pip是Python官方推荐的包安装工具。"},{"id":76,"category":"Python基础","question":"以下哪个不是Python的内置函数？","options":{"A":"print()","B":"len()","C":"append()","D":"range()"},"answer":"C","explanation":"append()是列表对象的方法，不是内置函数。"},{"id":77,"category":"Python基础","question":"以下哪个函数可以创建一个迭代器？","options":{"A":"iter()","B":"next()","C":"generator()","D":"iterable()"},"answer":"A","explanation":"iter(obj)用于从可迭代对象获取迭代器。"},{"id":78,"category":"Python基础","question":"以下哪个是正确的装饰器语法？","options":{"A":"@decorator","B":"#decorator","C":"decorator()","D":"usedecorator"},"answer":"A","explanation":"@符号用于应用装饰器，放在函数定义之前。"},{"id":79,"category":"Python基础","question":"以下哪个模块用于处理JSON数据？","options":{"A":"json","B":"pickle","C":"xml","D":"csv"},"answer":"A","explanation":"json模块提供了dumps()、loads()、dump()、load()等方法处理 JSON。"},{"id":80,"category":"Python基础","question":"以下哪个方法将Python对象序列化为JSON字符串？","options":{"A":"json.dumps()","B":"json.loads()","C":"json.dump()","D":"json.load()"},"answer":"A","explanation":"dumps()中的's'表示string，即将对象转为字符串。"},{"id":81,"category":"Python基础","question":"以下哪个方法从JSON文件读取数据并转为Python对象？","options":{"A":"json.load()","B":"json.loads()","C":"json.read()","D":"json.from_file()"},"answer":"A","explanation":"json.load(file_obj)从文件对象中读取并解析JSON。"},{"id":82,"category":"Python基础","question":"以下哪个是虚拟环境工具？","options":{"A":"venv","B":"virtualenv","C":"conda","D":"以上都是"},"answer":"D","explanation":"venv（标准库）、virtualenv（第三方）、conda（Anaconda）都可 用于创建隔离环境。"},{"id":83,"category":"Python基础","question":"以下哪个方法可以获取当前工作目录？","options":{"A":"os.getcwd()","B":"os.chdir()","C":"os.dir()","D":"os.path()"},"answer":"A","explanation":"os.getcwd()返回当前工作目录的字符串。"},{"id":84,"category":"Python基础","question":"以下哪个方法可以更改当前工作目录？","options":{"A":"os.chdir()","B":"os.getcwd()","C":"os.move()","D":"os.setdir()"},"answer":"A","explanation":"os.chdir(path)用于改变当前工作目录到指定路径。"},{"id":85,"category":"Python基础","question":"以下哪个是正确的上下文管理器关键字？","options":{"A":"with","B":"try","C":"context","D":"using"},"answer":"A","explanation":"with语句用于简化资源（如文件）的管理和清理工作。"},{"id":86,"category":"Python基础","question":"以下哪个方法可以将字符串按指定分隔符分割并返回列表？","options":{"A":"split()","B":"partition()","C":"slice()","D":"chop()"},"answer":"A","explanation":"str.split(sep)是常用的分割方法。"},{"id":87,"category":"Python基础","question":"以下哪个不是序列类型？","options":{"A":"列表","B":"元组","C":"字符串","D":"字典"},"answer":"D","explanation":"字典是映射类型，不是序列类型（序列强调有序和索引）。"},{"id":88,"category":"Python基础","question":"以下哪个操作符用于重复序列？","options":{"A":"*","B":"+","C":"x","D":"repeat"},"answer":"A","explanation":"*运算符可用于序列重复，如[1,2]*3结果为[1,2,1,2,1,2]。"},{"id":89,"category":"Python基础","question":"以下哪个方法可以获取集合的交集？","options":{"A":"intersection()","B":"union()","C":"difference()","D":"symmetric_difference()"},"answer":"A","explanation":"set1.intersection(set2)返回两个集合的公共元素。"},{"id":90,"category":"Python基础","question":"以下哪个方法向集合中添加元素？","options":{"A":"add()","B":"append()","C":"insert()","D":"push()"},"answer":"A","explanation":"set.add(element)用于向集合中添加单个元素。"},{"id":91,"category":"Python基础","question":"以下哪个不是可变数据类型？","options":{"A":"list","B":"dict","C":"set","D":"tuple"},"answer":"D","explanation":"元组是不可变的，其他三项都是可变的。"},{"id":92,"category":"Python基础","question":"以下哪个表达式创建了一个生成器？","options":{"A":"(iforiinrange(3))","B":"[iforiinrange(3)]","C":"{iforiinrange(3)}","D":"{i:iforiinrange(3)}"},"answer":"A","explanation":"圆括号形式创建生成器表达式。"},{"id":93,"category":"Python基础","question":"以下哪个函数可以将十进制数转换为二进制字符串？","options":{"A":"bin()","B":"oct()","C":"hex()","D":"int()"},"answer":"A","explanation":"bin(x)将整数转换为以'0b'开头的二进制字符串。"},{"id":94,"category":"Python基础","question":"以下哪个是Python的官方扩展库索引？","options":{"A":"PyPI","B":"GitHub","C":"StackOverflow","D":"Python.org"},"answer":"A","explanation":"PyPI（PythonPackageIndex）是Python官方的第三方库仓库。"},{"id":95,"category":"Python基础","question":"以下哪个方法可以对文件对象进行写入？","options":{"A":"write()","B":"writelines()","C":"print()（配合file参数）","D":"以上都是"},"answer":"D","explanation":"以上三种方式均可向文件写入内容。"},{"id":96,"category":"Python基础","question":"以下哪个是正确的多行字符串定义？","options":{"A":"'''内容'''","B":"\"\"\"内容\"\"\"","C":"\"一行\n另一行\"","D":"以上都是"},"answer":"D","explanation":"三重引号和转义字符均可定义多行字符串。"},{"id":97,"category":"Python基础","question":"以下哪个模块用于处理系统相关参数和函数？","options":{"A":"sys","B":"os","C":"platform","D":"以上都是"},"answer":"D","explanation":"sys模块提供对解释器使用或维护的变量的访问。"},{"id":98,"category":"Python基础","question":"以下哪个是Python的交互式解释器提示符？","options":{"A":">>>","B":"$","C":"%","D":">"},"answer":"A","explanation":"在标准交互式环境中，提示符为>>>。"},{"id":99,"category":"Python基础","question":"以下哪个命令用于在命令行运行Python脚本？","options":{"A":"pythonscript.py","B":"runscript.py","C":"executescript.py","D":"python-rscript.py"},"answer":"A","explanation":"这是最标准的运行Python脚本的命令。"},{"id":100,"category":"Python基础","question":"以下哪个不是Python语言的特点？","options":{"A":"解释型","B":"编译型","C":"动态类型","D":"面向对象"},"answer":"B","explanation":"Python是解释型语言，虽然会先编译为字节码，但对用户透明，通 常不称为编译型语言。"},{"id":101,"category":"机器学习","question":"以下哪种学习范式主要用于预测连续数值？","options":{"A":"分类","B":"回归","C":"聚类","D":"降维"},"answer":"B","explanation":"回归分析用于预测因变量（目标）与自变量（特征）之间的连续数 值关系，如房价预测。"},{"id":102,"category":"机器学习","question":"K-means算法属于哪一类学习？","options":{"A":"监督学习","B":"半监督学习","C":"无监督学习","D":"强化学习"},"answer":"C","explanation":"K-means是一种聚类算法，它在没有标签的数据中寻找结构，属于无 监督学习。"},{"id":103,"category":"机器学习","question":"在二分类问题中，通常用来衡量模型预测概率与真实标签差异的损失函数 是：","options":{"A":"均方误差","B":"交叉熵损失","C":"绝对误差","D":"Hinge损失"},"answer":"B","explanation":"二元交叉熵损失函数能够有效衡量分类概率分布的差异，是分类任 务的常用选择。"},{"id":104,"category":"机器学习","question":"以下哪个指标不适合用于评估不平衡数据集上的分类模型？","options":{"A":"准确率","B":"精确率","C":"召回率","D":"F1分数"},"answer":"A","explanation":"在不平衡数据集中，准确率可能会产生误导（例如99%的样本都是负 类，模型全猜负类也能达到99%准确率）。"},{"id":105,"category":"机器学习","question":"决策树中，用于选择最佳分裂特征的指标不包括：","options":{"A":"信息增益","B":"基尼不纯度","C":"方差","D":"欧氏距离"},"answer":"D","explanation":"信息增益和基尼不纯度用于分类树，方差用于回归树，欧氏距离通 常用于KNN等距离度量算法。"},{"id":106,"category":"机器学习","question":"防止模型过拟合的常用方法不包括：","options":{"A":"增加训练数据","B":"增加特征数量","C":"使用正则化","D":"早停法"},"answer":"B","explanation":"增加特征数量通常会增加模型的复杂度，反而可能加剧过拟合。"},{"id":107,"category":"机器学习","question":"在神经网络中，激活函数的主要作用是：","options":{"A":"加速计算","B":"引入非线性","C":"减少参数","D":"防止欠拟合"},"answer":"B","explanation":"如果没有激活函数，神经网络无论多少层都只能表达线性变换，激 活函数引入非线性以拟合复杂函数。"},{"id":108,"category":"机器学习","question":"卷积神经网络（CNN）中，池化层（Pooling）的主要目的是：","options":{"A":"增加特征维度","B":"提取特征","C":"降低特征维度，减少计算量","D":"增加非线性"},"answer":"C","explanation":"池化层通过对特征图进行下采样，减少参数数量和计算量，同时增 强特征的平移不变性。"},{"id":109,"category":"机器学习","question":"以下哪种算法属于集成学习方法？","options":{"A":"K-近邻","B":"支持向量机","C":"随机森林","D":"逻辑回归"},"answer":"C","explanation":"随机森林通过构建多个决策树并集成其结果来提高模型的性能和鲁 棒性。"},{"id":110,"category":"机器学习","question":"在自然语言处理中，词袋模型（BagofWords）忽略了文本中的：","options":{"A":"词频","B":"词汇","C":"词序","D":"停用词"},"answer":"C","explanation":"词袋模型将文本表示为词汇表中单词的出现频率，但完全忽略了单 词出现的顺序和语法结构。"},{"id":111,"category":"机器学习","question":"以下哪个不是监督学习算法？","options":{"A":"线性回归","B":"朴素贝叶斯","C":"主成分分析","D":"支持向量机"},"answer":"C","explanation":"主成分分析是一种无监督的降维技术，不依赖标签数据。"},{"id":112,"category":"机器学习","question":"在梯度下降算法中，学习率过大可能导致：","options":{"A":"收敛速度变慢","B":"无法收敛或震荡","C":"一定找到全局最优解","D":"损失函数值为负"},"answer":"B","explanation":"学习率过大可能导致参数更新步长过大，在最优解附近震荡甚至发 散，无法收敛。"},{"id":113,"category":"机器学习","question":"ROC曲线下的面积（AUC）主要用于评估：","options":{"A":"回归模型的拟合优度","B":"分类模型的排序能力","C":"聚类模型的紧密度","D":"降维模型的方差解释率"},"answer":"B","explanation":"AUC值越大，说明模型区分正负样本的能力越强，不依赖于具体的分 类阈值。"},{"id":114,"category":"机器学习","question":"以下哪种正则化方法倾向于产生稀疏解（即许多权重为0）？","options":{"A":"L1正则化","B":"L2正则化","C":"Dropout","D":"BatchNormalization"},"answer":"A","explanation":"L1正则化在损失函数中加入权重的绝对值之和，倾向于使不重要的 权重变为0，可用于特征选择。"},{"id":115,"category":"机器学习","question":"在K折交叉验证中，如果K等于样本数量N，则称为：","options":{"A":"留一法","B":"留出法","C":"自助法","D":"随机验证"},"answer":"A","explanation":"当K等于样本总数时，每次留一个样本作为验证集，其余作为训练 集，称为留一交叉验证。"},{"id":116,"category":"机器学习","question":"逻辑回归虽然名字中有“回归”，但实际上常用于解决：","options":{"A":"回归问题","B":"分类问题","C":"聚类问题","D":"降维问题"},"answer":"B","explanation":"逻辑回归通过Sigmoid函数将线性回归的输出映射到(0,1)之间，用 于二分类概率预测。"},{"id":117,"category":"机器学习","question":"以下哪种距离度量方式在K近邻算法中不常用？","options":{"A":"欧氏距离","B":"曼哈顿距离","C":"余弦相似度","D":"随机距离"},"answer":"D","explanation":"欧氏距离、曼哈顿距离和余弦相似度是KNN中常用的距离或相似度 度量，随机距离无实际意义。"},{"id":118,"category":"机器学习","question":"生成对抗网络（GAN）包含两个主要部分，它们是：","options":{"A":"编码器和解码器","B":"生成器和判别器","C":"输入层和输出层","D":"训练集和测试集"},"answer":"B","explanation":"GAN通过生成器生成假数据，判别器判断数据真假，两者相互博弈共 同提升。"},{"id":119,"category":"机器学习","question":"在推荐系统中，基于用户的协同过滤（User-basedCF）主要依据：","options":{"A":"物品的属性相似性","B":"用户的兴趣相似性","C":"用户的地理位置","D":"物品的价格"},"answer":"B","explanation":"基于用户的协同过滤认为兴趣相似的用户喜欢的物品也相似。"},{"id":120,"category":"机器学习","question":"以下哪种优化器在深度学习中能够自适应地调整学习率？","options":{"A":"SGD","B":"Momentum","C":"Adam","D":"以上都是"},"answer":"C","explanation":"Adam结合了动量和自适应学习率（RMSprop）的优点，能够为每个参 数计算不同的学习率。"},{"id":121,"category":"机器学习","question":"在处理文本数据时，将文本转换为向量的过程称为：","options":{"A":"文本清洗","B":"特征提取/向量化","C":"分词","D":"去停用词"},"answer":"B","explanation":"特征提取（如词袋模型、TF-IDF、词嵌入）将非结构化的文本转化 为机器学习算法可处理的数值向量。"},{"id":122,"category":"机器学习","question":"以下哪个不是常见的激活函数？","options":{"A":"Sigmoid","B":"ReLU","C":"Softmax","D":"MSE"},"answer":"D","explanation":"MSE是均方误差，是一种损失函数，而非激活函数。"},{"id":123,"category":"机器学习","question":"在支持向量机（SVM）中，核函数的主要作用是：","options":{"A":"减少训练时间","B":"将数据映射到高维空间","C":"增加数据量","D":"去除噪声"},"answer":"B","explanation":"核技巧可以将线性不可分的数据映射到高维特征空间，使其在高维 空间线性可分。"},{"id":124,"category":"机器学习","question":"以下哪种情况属于欠拟合？","options":{"A":"训练误差大，测试误差小","B":"训练误差小，测试误差大","C":"训练误差大，测试误差也大","D":"训练误差小，测试误差小"},"answer":"C","explanation":"欠拟合指模型未能很好地捕捉数据的潜在规律，导致在训练集和测 试集上表现均不佳。"},{"id":125,"category":"机器学习","question":"在机器学习项目中，数据预处理通常包括：","options":{"A":"缺失值处理","B":"特征缩放","C":"异常值检测","D":"以上都是"},"answer":"D","explanation":"数据预处理是机器学习的关键步骤，包括清洗、转换、归一化等操 作，以提升模型性能。"},{"id":126,"category":"机器学习","question":"以下哪种算法对异常值最敏感？","options":{"A":"K-means","B":"随机森林","C":"中位数","D":"众数"},"answer":"A","explanation":"K-means使用均值更新聚类中心，异常值会显著拉偏聚类中心的位 置。"},{"id":127,"category":"机器学习","question":"在深度学习中，反向传播算法主要用于：","options":{"A":"初始化权重","B":"计算损失","C":"更新权重","D":"前向推理"},"answer":"C","explanation":"反向传播通过链式法则计算损失函数对每个权重的梯度，用于指导 权重更新。"},{"id":128,"category":"机器学习","question":"以下哪个框架主要用于深度学习？","options":{"A":"NumPy","B":"Pandas","C":"TensorFlow","D":"Matplotlib"},"answer":"C","explanation":"TensorFlow是由Google开发的主流深度学习框架，而NumPy、 Pandas主要用于数据处理。"},{"id":129,"category":"机器学习","question":"在自然语言处理中，TF-IDF中的IDF代表：","options":{"A":"词频","B":"逆文档频率","C":"文档频率","D":"词向量"},"answer":"B","explanation":"IDF衡量一个词的常见程度，词越常见，IDF值越低，以此来降低停 用词的权重。"},{"id":130,"category":"机器学习","question":"以下哪种方法不属于降维技术？","options":{"A":"主成分分析","B":"线性判别分析","C":"t-SNE","D":"K-均值"},"answer":"D","explanation":"K-均值是聚类算法，不是降维算法。"},{"id":131,"category":"机器学习","question":"在强化学习中，智能体（Agent）通过什么与环境交互？","options":{"A":"状态和动作","B":"输入和输出","C":"训练和测试","D":"特征和标签"},"answer":"A","explanation":"智能体在状态（S）下采取动作（A），环境反馈奖励（R）和新状 态。"},{"id":132,"category":"机器学习","question":"以下哪个指标用于衡量回归模型的性能？","options":{"A":"R²决定系数","B":"精确率","C":"召回率","D":"AUC"},"answer":"A","explanation":"R²表示模型对目标变量变异性的解释程度，是回归模型的常用评估 指标。"},{"id":133,"category":"机器学习","question":"在神经网络中，Dropout技术的作用是：","options":{"A":"加速训练","B":"防止过拟合","C":"提高准确率","D":"增加深度"},"answer":"B","explanation":"Dropout在训练时随机将一部分神经元输出置为0，减少神经元间的 复杂共适应关系，防止过拟合。"},{"id":134,"category":"机器学习","question":"以下哪种损失函数常用于多分类问题？","options":{"A":"二元交叉熵","B":"多分类交叉熵","C":"均方误差","D":"Hinge损失"},"answer":"B","explanation":"多分类交叉熵（CategoricalCrossentropy）适用于目标是独热编 码（one-hot）的多分类任务。"},{"id":135,"category":"机器学习","question":"在贝叶斯分类器中，朴素贝叶斯假设特征之间：","options":{"A":"相互依赖","B":"相互独立","C":"线性相关","D":"非线性相关"},"answer":"B","explanation":"“朴素”一词即来源于其核心假设：给定类别下，所有特征之间相 互条件独立。"},{"id":136,"category":"机器学习","question":"以下哪个不是深度学习在计算机视觉中的应用？","options":{"A":"图像分类","B":"目标检测","C":"机器翻译","D":"人脸识别"},"answer":"C","explanation":"机器翻译属于自然语言处理领域，虽然也常用深度学习，但不属于 计算机视觉。"},{"id":137,"category":"机器学习","question":"在数据划分中，验证集的主要作用是：","options":{"A":"最终评估模型","B":"训练模型参数","C":"调整超参数","D":"收集原始数据"},"answer":"C","explanation":"验证集用于在训练过程中评估模型性能，以选择最佳的超参数（如 学习率、正则化系数）。"},{"id":138,"category":"机器学习","question":"以下哪种方法可以解决类别不平衡问题？","options":{"A":"过采样","B":"欠采样","C":"使用类别权重","D":"以上都是"},"answer":"D","explanation":"过采样增加少数类样本，欠采样减少多数类样本，类别权重调整损 失函数惩罚力度。"},{"id":139,"category":"机器学习","question":"在线性回归中，最小二乘法的目标是最小化：","options":{"A":"绝对误差和","B":"残差平方和","C":"梯度","D":"参数数量"},"answer":"B","explanation":"最小二乘法通过最小化观测值与预测值之差的平方和来估计模型参 数。"},{"id":140,"category":"机器学习","question":"以下哪个算法不需要对数据进行特征缩放？","options":{"A":"线性回归","B":"逻辑回归","C":"决策树","D":"支持向量机"},"answer":"C","explanation":"决策树基于特征的分裂点进行判断，其结果不受特征尺度的影响。"},{"id":141,"category":"机器学习","question":"在自然语言处理中，Word2Vec的主要目的是：","options":{"A":"分词","B":"去除停用词","C":"生成词向量","D":"文本分类"},"answer":"C","explanation":"Word2Vec将词汇映射到低维连续向量空间，使得语义相似的词向量 距离相近。"},{"id":142,"category":"机器学习","question":"以下哪种网络结构最适合处理序列数据？","options":{"A":"卷积神经网络","B":"全连接网络","C":"循环神经网络","D":"自编码器"},"answer":"C","explanation":"RNN具有记忆能力，能够处理序列数据（如文本、时间序列）中的时 序依赖关系。"},{"id":143,"category":"机器学习","question":"在模型评估中，偏差（Bias）主要描述的是：","options":{"A":"模型的方差","B":"模型的预测误差","C":"模型的拟合能力","D":"数据的噪声"},"answer":"C","explanation":"高偏差通常对应欠拟合，指模型无法捕捉数据的复杂模式。"},{"id":144,"category":"机器学习","question":"以下哪个不是常见的超参数？","options":{"A":"学习率","B":"迭代次数","C":"权重","D":"隐藏层大小"},"answer":"C","explanation":"权重是模型在训练过程中学习到的参数，而不是人为设定的超参 数。"},{"id":145,"category":"机器学习","question":"在聚类分析中，肘部法则（ElbowMethod）用于确定：","options":{"A":"最佳聚类数量K","B":"聚类中心坐标","C":"样本标签","D":"数据维度"},"answer":"A","explanation":"通过绘制K与簇内误差平方和（SSE）的关系图，寻找“肘部”拐点 以确定最优K值。"},{"id":146,"category":"机器学习","question":"以下哪种技术可以用于图像数据增强？","options":{"A":"旋转","B":"翻转","C":"裁剪","D":"以上都是"},"answer":"D","explanation":"数据增强通过对训练图像进行随机变换，增加数据多样性，提升模 型泛化能力。"},{"id":147,"category":"机器学习","question":"在机器学习中，特征工程的主要目标是：","options":{"A":"减少数据量","B":"提高模型输入质量","C":"加快计算速度","D":"降低存储成本"},"answer":"B","explanation":"特征工程通过构造、选择和转换特征，使数据更能代表问题的本 质，从而提升模型性能。"},{"id":148,"category":"机器学习","question":"以下哪个算法属于基于树的模型？","options":{"A":"XGBoost","B":"KNN","C":"SVM","D":"NaiveBayes"},"answer":"A","explanation":"XGBoost是一种基于梯度提升决策树的集成学习算法。"},{"id":149,"category":"机器学习","question":"在自然语言处理中，注意力机制（Attention）主要解决：","options":{"A":"计算机视觉问题","B":"序列到序列模型中的长距离依赖问题","C":"数据存储问题","D":"模型部署问题"},"answer":"B","explanation":"注意力机制允许模型在处理序列时关注输入序列的不同部分，有效 缓解了RNN长序列信息丢失的问题。"},{"id":150,"category":"机器学习","question":"以下哪种情况会导致维度灾难？","options":{"A":"特征数量过少","B":"样本数量过多","C":"特征数量过多","D":"模型过于简单"},"answer":"C","explanation":"维度灾难指当特征维度极高时，数据变得极度稀疏，导致模型难以 训练且容易过拟合。"},{"id":151,"category":"机器学习","question":"在深度学习中，批量大小（BatchSize）是指：","options":{"A":"网络层数","B":"每次迭代使用的样本数","C":"学习率","D":"迭代次数"},"answer":"B","explanation":"批量大小影响梯度估计的准确性和训练的稳定性，是重要的超参 数。"},{"id":152,"category":"机器学习","question":"以下哪个不是监督学习的假设？","options":{"A":"训练集和测试集同分布","B":"样本独立同分布","C":"数据无限多","D":"特征之间完全相关"},"answer":"D","explanation":"监督学习通常假设数据是独立同分布的，特征之间完全相关是不现 实且通常有害的。"},{"id":153,"category":"机器学习","question":"在回归问题中，如果模型在训练集上表现很好，但在测试集上表现很差， 这通常是：","options":{"A":"欠拟合","B":"过拟合","C":"拟合良好","D":"数据泄露"},"answer":"B","explanation":"这是典型的过拟合现象，模型记住了训练数据的噪声而非泛化规 律。"},{"id":154,"category":"机器学习","question":"以下哪种算法对缺失值不敏感？","options":{"A":"线性回归","B":"逻辑回归","C":"决策树","D":"SVM"},"answer":"C","explanation":"决策树算法在分裂时可以自然地处理缺失值（例如通过替代分 裂），而大多数线性模型需要预处理。"},{"id":155,"category":"机器学习","question":"在推荐系统中，矩阵分解技术主要用于：","options":{"A":"内容过滤","B":"协同过滤","C":"基于人口统计","D":"基于知识"},"answer":"B","explanation":"矩阵分解（如SVD）是协同过滤的核心技术，用于挖掘用户-物品评 分矩阵中的潜在特征。"},{"id":156,"category":"机器学习","question":"以下哪个激活函数在深层网络中容易导致梯度消失？","options":{"A":"ReLU","B":"LeakyReLU","C":"Sigmoid","D":"ELU"},"answer":"C","explanation":"Sigmoid函数在输入值较大或较小时，梯度接近于0，导致反向传播 时梯度消失。"},{"id":157,"category":"机器学习","question":"在机器学习中，交叉验证的主要目的是：","options":{"A":"增加训练数据","B":"更可靠地评估模型性能","C":"减少特征数量","D":"加快训练速度"},"answer":"B","explanation":"交叉验证通过多次划分数据集进行训练和验证，提供了对模型泛化 性能更稳定、无偏的估计。"},{"id":158,"category":"机器学习","question":"以下哪种方法不属于无监督学习？","options":{"A":"聚类","B":"密度估计","C":"降维","D":"分类"},"answer":"D","explanation":"分类需要标签，属于监督学习。"},{"id":159,"category":"机器学习","question":"在自然语言处理中，BERT模型属于：","options":{"A":"生成式预训练模型","B":"双向编码器表示","C":"机器翻译模型","D":"语音识别模型"},"answer":"B","explanation":"BERT的全称是BidirectionalEncoderRepresentationsfrom Transformers，即双向Transformer编码器表示。"},{"id":160,"category":"机器学习","question":"以下哪个指标用于衡量聚类的紧密度？","options":{"A":"轮廓系数","B":"准确率","C":"精确率","D":"召回率"},"answer":"A","explanation":"轮廓系数综合考虑了簇内紧密度和簇间分离度，用于评估聚类质 量。"},{"id":161,"category":"机器学习","question":"在强化学习中，Q-learning的目标是学习：","options":{"A":"策略","B":"价值函数","C":"环境模型","D":"奖励函数"},"answer":"B","explanation":"Q-learning是一种值迭代方法，旨在学习动作价值函数Q(s,a)，即 在状态s下采取动作a的长期回报。"},{"id":162,"category":"机器学习","question":"以下哪个不是深度学习框架？","options":{"A":"PyTorch","B":"Keras","C":"Scikit-learn","D":"Caffe"},"answer":"C","explanation":"Scikit-learn是一个传统的机器学习库，主要用于算法如SVM、随 机森林等，而非深度学习。"},{"id":163,"category":"机器学习","question":"在数据预处理中，标准化（Standardization）通常是指：","options":{"A":"将数据缩放到[0,1]区间","B":"将数据缩放到[-1,1]区间","C":"将数据转换为均值为0，标准差为1","D":"将数据取对数"},"answer":"C","explanation":"标准化公式为(x-mean)/std，使数据符合标准正态分布。"},{"id":164,"category":"机器学习","question":"以下哪种正则化方法在深度学习中常用于全连接层？","options":{"A":"L1","B":"L2","C":"Dropout","D":"早停"},"answer":"C","explanation":"Dropout是深度学习中针对神经网络（特别是全连接层）防止过拟合 的常用正则化手段。"},{"id":165,"category":"机器学习","question":"在图像处理中，卷积操作主要用于提取：","options":{"A":"图像的颜色","B":"图像的纹理和边缘特征","C":"图像的文件大小","D":"图像的拍摄时间"},"answer":"B","explanation":"卷积核（滤波器）通过滑动窗口可以检测图像中的边缘、角点、纹 理等局部特征。"},{"id":166,"category":"机器学习","question":"以下哪个算法属于贪心算法？","options":{"A":"K-means","B":"决策树","C":"梯度下降","D":"以上都是"},"answer":"D","explanation":"这些算法在每一步都做出局部最优选择（如决策树的特征选择、梯 度下降的下降方向、K-means的中心分配）。"},{"id":167,"category":"机器学习","question":"在自然语言处理中，分词（Tokenization）是将文本分割成：","options":{"A":"句子","B":"单词或子词单元","C":"段落","D":"文档"},"answer":"B","explanation":"分词是NLP的基础步骤，将连续的文本切分为有意义的语言单元 （Token）。"},{"id":168,"category":"机器学习","question":"以下哪种情况适合使用无监督学习？","options":{"A":"预测房价","B":"垃圾邮件分类","C":"客户细分","D":"语音识别"},"answer":"C","explanation":"客户细分（聚类）通常没有预先定义的标签，适合使用无监督学习 发现潜在群体。"},{"id":169,"category":"机器学习","question":"在机器学习中，偏差-方差权衡中，高方差通常对应：","options":{"A":"欠拟合","B":"过拟合","C":"拟合良好","D":"数据不足"},"answer":"B","explanation":"高方差意味着模型对训练数据的变化非常敏感，即过拟合，泛化能 力差。"},{"id":170,"category":"机器学习","question":"以下哪个不是常见的核函数？","options":{"A":"线性核","B":"多项式核","C":"高斯核","D":"逻辑核"},"answer":"D","explanation":"逻辑核不是SVM中使用的标准核函数。"},{"id":171,"category":"机器学习","question":"在深度学习中，批量归一化（BatchNormalization）的主要作用不包括：","options":{"A":"加速训练","B":"允许更高的学习率","C":"作为正则化手段","D":"增加模型的非线性"},"answer":"D","explanation":"BN主要作用是缓解内部协变量偏移，加速收敛，并具有轻微的正则 化效果，但不直接增加非线性（需配合激活函数）。"},{"id":172,"category":"机器学习","question":"以下哪个算法可以用于异常检测？","options":{"A":"一类SVM","B":"孤立森林","C":"自编码器","D":"以上都是"},"answer":"D","explanation":"这些算法都可以用于无监督或半监督的异常检测任务。"},{"id":173,"category":"机器学习","question":"在特征选择中，递归特征消除属于：","options":{"A":"过滤法","B":"包装法","C":"嵌入法","D":"降维法"},"answer":"B","explanation":"包装法使用模型性能作为评价标准，递归特征消除通过反复训练模 型来剔除最不重要特征。"},{"id":174,"category":"机器学习","question":"以下哪个不是集成学习的策略？","options":{"A":"Bagging","B":"Boosting","C":"Stacking","D":"Sampling"},"answer":"D","explanation":"Bagging、Boosting和Stacking是三种主要的集成学习框架，采样 （Sampling）是一种数据处理技术。"},{"id":175,"category":"机器学习","question":"在自然语言处理中，Transformer模型的核心机制是：","options":{"A":"卷积","B":"循环","C":"注意力","D":"池化"},"answer":"C","explanation":"Transformer完全基于自注意力机制（Self-Attention），摒弃了传 统的RNN和CNN结构。"},{"id":176,"category":"机器学习","question":"以下哪个指标用于衡量两个变量之间的线性相关性？","options":{"A":"方差","B":"协方差","C":"相关系数","D":"均值"},"answer":"C","explanation":"皮尔逊相关系数衡量两个变量间的线性相关程度，取值在-1到1之 间。"},{"id":177,"category":"机器学习","question":"在模型部署中，模型序列化通常是指：","options":{"A":"将模型转换为JSON格式","B":"将模型对象保存到磁盘","C":"将模型转换为SQL","D":"将模型删除"},"answer":"B","explanation":"序列化（如使用pickle、joblib或框架自带的save方法）将训练 好的模型状态保存，以便后续加载和推理。"},{"id":178,"category":"机器学习","question":"以下哪种方法可以减少训练神经网络的时间？","options":{"A":"使用GPU","B":"减少批量大小","C":"增加网络深度","D":"使用更小的学习率"},"answer":"A","explanation":"GPU的并行计算能力可以极大地加速神经网络的矩阵运算。"},{"id":179,"category":"机器学习","question":"在机器学习中，冷启动问题通常出现在：","options":{"A":"图像分类","B":"推荐系统","C":"语音识别","D":"机器翻译"},"answer":"B","explanation":"推荐系统中的冷启动指新用户或新物品没有交互数据，难以进行有 效推荐。"},{"id":180,"category":"机器学习","question":"以下哪个不是生成模型？","options":{"A":"朴素贝叶斯","B":"隐马尔可夫模型","C":"逻辑回归","D":"生成对抗网络"},"answer":"C","explanation":"逻辑回归是判别模型，直接学习P(类别|特征)；生成模型学习P(特 征|类别)和P(类别)。"},{"id":181,"category":"机器学习","question":"在数据清洗中，处理缺失值的方法不包括：","options":{"A":"删除含有缺失值的行","B":"使用均值/中位数填充","C":"使用模型预测填充","D":"增加更多特征"},"answer":"D","explanation":"增加特征不能解决现有特征的缺失问题。"},{"id":182,"category":"机器学习","question":"以下哪个算法对异常值最不敏感？","options":{"A":"均值","B":"中位数","C":"标准差","D":"方差"},"answer":"B","explanation":"中位数是鲁棒统计量，不受极端值影响，而均值、方差等对异常值 敏感。"},{"id":183,"category":"机器学习","question":"在深度学习中，Softmax函数通常用于：","options":{"A":"二分类输出层","B":"多分类输出层","C":"隐藏层","D":"输入层"},"answer":"B","explanation":"Softmax将向量压缩为概率分布，所有元素和为1，适合多分类任务 的输出。"},{"id":184,"category":"机器学习","question":"以下哪个不是计算机视觉的任务？","options":{"A":"图像分割","B":"目标检测","C":"语义分析","D":"图像生成"},"answer":"C","explanation":"语义分析属于自然语言处理领域，关注文本的含义理解。"},{"id":185,"category":"机器学习","question":"在机器学习中，偏差是指：","options":{"A":"模型在训练集上的误差","B":"模型在测试集上的误差","C":"模型的期望预测与真实结果的偏离程度","D":"模型预测的方差"},"answer":"C","explanation":"偏差度量了学习算法的期望预测与真实结果的偏离情况，即刻画了 学习算法本身的拟合能力。"},{"id":186,"category":"机器学习","question":"以下哪个库常用于Python中的科学计算？","options":{"A":"NumPy","B":"Pandas","C":"Scikit-learn","D":"以上都是"},"answer":"D","explanation":"这三个库都是Python数据科学栈的核心组件，NumPy用于数值计 算，Pandas用于数据分析，Scikit-learn用于机器学习。"},{"id":187,"category":"机器学习","question":"在自然语言处理中，停用词（StopWords）通常指：","options":{"A":"重要的关键词","B":"出现频率低的词","C":"语法功能词（如的、是、在）","D":"专有名词"},"answer":"C","explanation":"停用词是文本中高频但信息量低的词，通常在预处理阶段被移除。"},{"id":188,"category":"机器学习","question":"以下哪种方法可以解决梯度消失问题？","options":{"A":"使用Sigmoid激活函数","B":"使用ReLU激活函数","C":"增加网络深度","D":"减小学习率"},"answer":"B","explanation":"ReLU在正区间的梯度恒为1，有效缓解了梯度消失问题。"},{"id":189,"category":"机器学习","question":"在聚类中，K-means++算法改进了：","options":{"A":"距离度量","B":"初始聚类中心的选择","C":"迭代次数","D":"K值的选择"},"answer":"B","explanation":"K-means++通过更智能的初始化方法，使初始中心点尽可能分散，提 高收敛速度和聚类质量。"},{"id":190,"category":"机器学习","question":"以下哪个不是回归树的分裂标准？","options":{"A":"均方误差","B":"平均绝对误差","C":"基尼系数","D":"泊松偏差"},"answer":"C","explanation":"基尼系数用于分类树，回归树通常使用MSE或MAE等衡量连续值的 误差。"},{"id":191,"category":"机器学习","question":"在模型评估中，混淆矩阵不包含：","options":{"A":"真正例","B":"假正例","C":"真负例","D":"损失值"},"answer":"D","explanation":"混淆矩阵包含TP、FP、TN、FN，损失值是通过损失函数计算得出的 标量。"},{"id":192,"category":"机器学习","question":"以下哪个算法可以处理非线性可分数据？","options":{"A":"线性SVM","B":"多项式回归","C":"核SVM","D":"逻辑回归"},"answer":"C","explanation":"通过使用核技巧，SVM可以将非线性可分数据映射到高维空间实现线 性可分。"},{"id":193,"category":"机器学习","question":"在深度学习中，循环神经网络（RNN）容易出现梯度消失或爆炸是因为：","options":{"A":"使用了全连接","B":"权重过大","C":"在时间维度上反向传播","D":"激活函数"},"answer":"C","explanation":"RNN在时间步上展开后是一个深层网络，反向传播时梯度连乘容易导 致消失或爆炸。"},{"id":194,"category":"机器学习","question":"以下哪个不是数据增强的目的？","options":{"A":"提高模型准确率","B":"减少过拟合","C":"增加数据多样性","D":"减少训练时间"},"answer":"D","explanation":"数据增强通常会增加训练数据量，可能会略微增加训练时间，而不 是减少。"},{"id":195,"category":"机器学习","question":"在特征工程中，独热编码（One-HotEncoding）主要用于处理：","options":{"A":"连续型特征","B":"有序分类特征","C":"无序分类特征","D":"文本特征"},"answer":"C","explanation":"独热编码将一个具有K个类别的分类特征转换为K个二进制特征， 避免引入虚假的顺序关系。"},{"id":196,"category":"机器学习","question":"以下哪个不是过拟合的迹象？","options":{"A":"训练损失持续下降","B":"验证损失开始上升","C":"训练准确率远高于验证准确率","D":"训练损失和验证损失都很高"},"answer":"D","explanation":"训练损失和验证损失都很高是欠拟合的迹象。"},{"id":197,"category":"机器学习","question":"在机器学习中，自助采样法（BootstrapSampling）是指：","options":{"A":"有放回地抽样","B":"无放回地抽样","C":"分层抽样","D":"系统抽样"},"answer":"A","explanation":"自助法从包含m个样本的数据集中有放回地抽取m个样本，作为训 练集。"},{"id":198,"category":"机器学习","question":"以下哪个算法属于基于密度的聚类？","options":{"A":"K-means","B":"层次聚类","C":"DBSCAN","D":"高斯混合模型"},"answer":"C","explanation":"DBSCAN通过寻找样本分布的高密度区域来发现簇，能识别噪声点。"},{"id":199,"category":"机器学习","question":"在自然语言处理中，TF-IDF的TF代表：","options":{"A":"逆文档频率","B":"词频","C":"文档频率","D":"词向量"},"answer":"B","explanation":"TF即词频，衡量一个词在文档中出现的频繁程度。"},{"id":200,"category":"机器学习","question":"以下哪个不是人工智能的子领域？","options":{"A":"机器学习","B":"深度学习","C":"数据库系统","D":"计算机视觉"},"answer":"C","explanation":"数据库系统属于计算机科学的基础领域，虽然为AI提供数据支持， 但本身不是AI的子领域。"},{"id":201,"category":"深度学习","question":"在深度学习中，激活函数ReLU的数学表达式是：","options":{"A":"f(x)=1/(1+e^-x)","B":"f(x)=max(0,x)","C":"f(x)=(e^x-e^-x)/(e^x+e^-x)","D":"f(x)=x"},"answer":"B","explanation":"ReLU（修正线性单元）定义为f(x)=max(0,x)，当输入大于0时 输出输入值，否则输出0。"},{"id":202,"category":"深度学习","question":"以下哪种神经网络结构主要用于处理图像数据？","options":{"A":"循环神经网络","B":"卷积神经网络","C":"全连接网络","D":"自编码器"},"answer":"B","explanation":"卷积神经网络（CNN）通过卷积核提取局部特征，具有平移不变性， 非常适合处理图像数据。"},{"id":203,"category":"深度学习","question":"在卷积神经网络中，卷积层的主要作用是：","options":{"A":"随机丢弃神经元","B":"提取局部特征","C":"进行分类","D":"归一化数据"},"answer":"B","explanation":"卷积层通过滤波器（卷积核）在输入数据上滑动，检测边缘、纹理 等局部特征。"},{"id":204,"category":"深度学习","question":"以下哪种优化算法结合了动量和自适应学习率的优点？","options":{"A":"SGD","B":"Momentum","C":"Adam","D":"Adagrad"},"answer":"C","explanation":"Adam（自适应矩估计）结合了动量法（Momentum）和RMSprop的优 点，能自适应调整每个参数的学习率。"},{"id":205,"category":"深度学习","question":"在深度学习中，批量归一化（BatchNormalization）的主要目的是：","options":{"A":"减少内部协变量偏移，加速训练","B":"增加模型参数","C":"防止欠拟合","D":"提高数据维度"},"answer":"A","explanation":"批量归一化通过对每一批数据进行归一化处理，使输入分布更稳 定，从而允许使用更高的学习率，加速收敛。"},{"id":206,"category":"深度学习","question":"以下哪个不是常见的损失函数？","options":{"A":"均方误差","B":"交叉熵","C":"Softmax","D":"HingeLoss"},"answer":"C","explanation":"Softmax是输出层常用的激活函数，用于将输出转化为概率分布，而 均方误差、交叉熵和HingeLoss都是损失函数。"},{"id":207,"category":"深度学习","question":"在图像分类任务中，ResNet引入了什么关键结构来解决深层网络的退化问 题？","options":{"A":"池化层","B":"Dropout","C":"残差连接（跳跃连接）","D":"卷积核"},"answer":"C","explanation":"残差连接允许输入直接绕过若干层加到输出上，使得网络更容易学 习恒等映射，解决了深层网络难以训练的问题。"},{"id":208,"category":"深度学习","question":"以下哪种网络结构最适合处理序列数据，如文本或时间序列？","options":{"A":"CNN","B":"GAN","C":"RNN","D":"SVM"},"answer":"C","explanation":"循环神经网络（RNN）具有记忆能力，通过隐藏状态传递序列中的历 史信息，适合处理序列数据。"},{"id":209,"category":"深度学习","question":"在自然语言处理中，将单词转换为固定维度向量的过程称为：","options":{"A":"分词","B":"词嵌入","C":"去停用词","D":"文本分类"},"answer":"B","explanation":"词嵌入（WordEmbedding）技术（如Word2Vec、GloVe）将词汇映射 到低维连续向量空间，捕捉语义信息。"},{"id":210,"category":"深度学习","question":"以下哪种方法主要用于防止模型过拟合？","options":{"A":"增加网络层数","B":"使用Dropout","C":"减少训练数据","D":"增大学习率"},"answer":"B","explanation":"Dropout在训练过程中随机将一部分神经元的输出置为0，减少神经 元之间的复杂共适应，增强模型泛化能力。"},{"id":211,"category":"深度学习","question":"在目标检测任务中，FasterR-CNN相比于FastR-CNN的主要改进是引入 了：","options":{"A":"ROIPooling","B":"非极大值抑制","C":"区域建议网络","D":"卷积层"},"answer":"C","explanation":"FasterR-CNN使用区域建议网络（RPN）来生成候选区域，取代了 FastR-CNN中耗时的选择性搜索，实现了端到端的训练。"},{"id":212,"category":"深度学习","question":"以下哪种激活函数在输出层常用于多分类问题？","options":{"A":"Sigmoid","B":"ReLU","C":"Softmax","D":"Tanh"},"answer":"C","explanation":"Softmax函数将输出向量转化为概率分布，所有输出值之和为1，适 用于多分类问题的输出层。"},{"id":213,"category":"深度学习","question":"在深度学习训练中，小批量梯度下降（Mini-batchGradientDescent）是 指：","options":{"A":"使用全部数据计算梯度","B":"使用一个样本计算梯度","C":"使用一部分样本（一个批次）计算梯度","D":"不使用梯度"},"answer":"C","explanation":"小批量梯度下降在每次迭代中使用一个批次（batch）的数据来估计 梯度，兼顾了效率和稳定性。"},{"id":214,"category":"深度学习","question":"以下哪个模型是基于自注意力机制的？","options":{"A":"LSTM","B":"Transformer","C":"GRU","D":"CNN"},"answer":"B","explanation":"Transformer模型完全基于自注意力（Self-Attention）机制，摒弃 了循环和卷积结构，在NLP任务中表现卓越。"},{"id":215,"category":"深度学习","question":"在生成对抗网络（GAN）中，生成器的目标是：","options":{"A":"正确分类真实数据","B":"生成能够欺骗判别器的假数据","C":"提取数据特征","D":"降维"},"answer":"B","explanation":"生成器通过学习真实数据的分布，生成逼真的假数据，试图让判别 器无法区分真假。"},{"id":216,"category":"深度学习","question":"以下哪种池化操作取感受野内的最大值？","options":{"A":"平均池化","B":"最大池化","C":"全局平均池化","D":"卷积"},"answer":"B","explanation":"最大池化（MaxPooling）选取池化窗口内的最大值作为输出，保留 最显著的特征。"},{"id":217,"category":"深度学习","question":"在序列模型中，长短期记忆网络（LSTM）主要解决了RNN的什么问题？","options":{"A":"计算速度慢","B":"无法处理长序列依赖","C":"参数过多","D":"过拟合"},"answer":"B","explanation":"标准RNN在处理长序列时容易出现梯度消失或爆炸，难以捕捉长距 离依赖，LSTM通过门控机制缓解了这一问题。"},{"id":218,"category":"深度学习","question":"以下哪个指标常用于评估回归模型？","options":{"A":"准确率","B":"精确率","C":"均方误差","D":"F1分数"},"answer":"C","explanation":"均方误差（MSE）衡量预测值与真实值之间差异的平方的平均值，是 回归任务的常用指标。"},{"id":219,"category":"深度学习","question":"在神经网络中，权重初始化的主要作用是：","options":{"A":"加速数据收集","B":"打破对称性，使网络能够学习","C":"防止过拟合","D":"减少层数"},"answer":"B","explanation":"如果权重初始化为相同的值，所有神经元将学习到相同的特征。合 理的初始化（如Xavier、He）能打破对称性。"},{"id":220,"category":"深度学习","question":"以下哪种技术不属于数据增强？","options":{"A":"图像旋转","B":"图像翻转","C":"添加噪声","D":"模型剪枝"},"answer":"D","explanation":"模型剪枝是一种模型压缩技术，用于减少模型参数，而图像旋转、 翻转和添加噪声都是数据增强手段。"},{"id":221,"category":"深度学习","question":"在深度学习框架中，TensorFlow是由哪家公司开发的？","options":{"A":"Facebook","B":"Google","C":"Microsoft","D":"Amazon"},"answer":"B","explanation":"TensorFlow是由GoogleBrain团队开发并开源的深度学习框架。"},{"id":222,"category":"深度学习","question":"以下哪种网络结构常用于图像分割任务？","options":{"A":"AlexNet","B":"VGGNet","C":"U-Net","D":"ResNet"},"answer":"C","explanation":"U-Net具有编码器-解码器结构，通过跳跃连接融合浅层细节和深层 语义，在医学图像分割中广泛应用。"},{"id":223,"category":"深度学习","question":"在自然语言处理中，BERT模型的预训练任务包括：","options":{"A":"图像分类","B":"掩码语言模型和下一句预测","C":"目标检测","D":"语音识别"},"answer":"B","explanation":"BERT通过掩码语言模型（MLM）和下一句预测（NSP）任务进行预训 练，学习双向上下文表示。"},{"id":224,"category":"深度学习","question":"以下哪个操作会减少特征图的尺寸？","options":{"A":"卷积","B":"批量归一化","C":"池化","D":"Dropout"},"answer":"C","explanation":"池化层（如最大池化）通过下采样操作减小特征图的宽度和高度， 降低计算量。"},{"id":225,"category":"深度学习","question":"在深度学习中，学习率过大可能导致：","options":{"A":"训练收敛过慢","B":"模型无法收敛或在最优解附近震荡","C":"一定找到全局最优解","D":"损失函数为负"},"answer":"B","explanation":"学习率过大时，参数更新步长过大，可能导致损失函数在最小值附 近震荡甚至发散，无法收敛。"},{"id":226,"category":"深度学习","question":"以下哪种正则化方法在损失函数中加入权重的平方和？","options":{"A":"L1正则化","B":"L2正则化","C":"Dropout","D":"批量归一化"},"answer":"B","explanation":"L2正则化（权重衰减）在损失函数中加入所有权重的平方和，惩罚 较大的权重，防止过拟合。"},{"id":227,"category":"深度学习","question":"在目标检测中，交并比（IoU）用于衡量：","options":{"A":"预测框与真实框的重叠程度","B":"图像的分辨率","C":"类别的概率","D":"特征图的大小"},"answer":"A","explanation":"交并比是预测框与真实框交集面积与并集面积的比值，用于评估检 测框的准确性。"},{"id":228,"category":"深度学习","question":"以下哪个不是循环神经网络的变体？","options":{"A":"LSTM","B":"GRU","C":"RNN","D":"CNN"},"answer":"D","explanation":"CNN是卷积神经网络，主要用于处理网格状数据（如图像），而 LSTM、GRU和RNN都是处理序列的网络。"},{"id":229,"category":"深度学习","question":"在深度学习中，反向传播算法利用什么法则计算梯度？","options":{"A":"交换律","B":"结合律","C":"链式法则","D":"分配律"},"answer":"C","explanation":"反向传播通过链式法则从输出层向输入层逐层计算损失函数对每个 参数的梯度。"},{"id":230,"category":"深度学习","question":"以下哪种模型属于生成模型？","options":{"A":"逻辑回归","B":"支持向量机","C":"变分自编码器","D":"决策树"},"answer":"C","explanation":"变分自编码器（VAE）学习数据的潜在分布，能够生成新的数据样 本，属于生成模型。"},{"id":231,"category":"深度学习","question":"在图像处理中，卷积核大小为3x3，填充（padding）为1，步幅 （stride）为1时，特征图尺寸：","options":{"A":"变大","B":"变小","C":"不变","D":"翻倍"},"answer":"C","explanation":"当padding=1，stride=1，卷积核为3x3时，输入特征图的尺寸在卷 积后保持不变。"},{"id":232,"category":"深度学习","question":"以下哪种注意力机制计算复杂度较低，常用于长序列？","options":{"A":"全局注意力","B":"局部注意力","C":"自注意力","D":"硬注意力"},"answer":"B","explanation":"局部注意力只考虑源序列的一部分位置，相比全局注意力计算量更 小，适合长序列。"},{"id":233,"category":"深度学习","question":"在深度学习中，Softmax函数的输出可以解释为：","options":{"A":"梯度","B":"损失值","C":"概率分布","D":"权重"},"answer":"C","explanation":"Softmax将任意实数向量转换为概率分布，每个元素在(0,1)之间， 且总和为1。"},{"id":234,"category":"深度学习","question":"以下哪个框架是PyTorch的主要竞争对手？","options":{"A":"NumPy","B":"Pandas","C":"TensorFlow","D":"Scikit-learn"},"answer":"C","explanation":"PyTorch和TensorFlow是目前最主流的两个深度学习框架，广泛用 于研究和生产。"},{"id":235,"category":"深度学习","question":"在自然语言处理中，分词（Tokenization）的目的是：","options":{"A":"将文本分割成单词或子词单元","B":"翻译文本","C":"语音合成","D":"情感分析"},"answer":"A","explanation":"分词是NLP的预处理步骤，将连续的文本切分为有意义的词汇单元 （tokens）。"},{"id":236,"category":"深度学习","question":"以下哪种情况属于欠拟合？","options":{"A":"训练误差大，验证误差小","B":"训练误差小，验证误差大","C":"训练误差大，验证误差也大","D":"训练误差小，验证误差小"},"answer":"C","explanation":"欠拟合指模型过于简单，无法捕捉数据的基本规律，导致在训练集 和验证集上表现均不佳。"},{"id":237,"category":"深度学习","question":"在GAN的训练中，纳什均衡指的是：","options":{"A":"生成器和判别器达到稳定状态","B":"生成器失败","C":"判别器失败","D":"损失函数为0"},"answer":"A","explanation":"在纳什均衡下，生成器生成的数据完美，判别器无法区分真假，输 出概率恒为0.5。"},{"id":238,"category":"深度学习","question":"以下哪个层通常位于CNN的末端，用于分类？","options":{"A":"卷积层","B":"池化层","C":"全连接层","D":"批量归一化层"},"answer":"C","explanation":"全连接层将前面卷积和池化提取的特征展平并映射到类别空间，输 出每个类别的得分。"},{"id":239,"category":"深度学习","question":"在深度学习中，批量大小（BatchSize）影响：","options":{"A":"模型的深度","B":"梯度估计的方差和训练速度","C":"图像的分辨率","D":"激活函数的选择"},"answer":"B","explanation":"批量大小决定了每次更新权重所用的样本数，影响内存占用、训练 稳定性和收敛速度。"},{"id":240,"category":"深度学习","question":"以下哪种技术可以压缩模型大小，加快推理速度？","options":{"A":"数据增强","B":"模型剪枝","C":"特征工程","D":"交叉验证"},"answer":"B","explanation":"模型剪枝通过移除不重要的连接或滤波器，减少模型参数和计算 量。"},{"id":241,"category":"深度学习","question":"在序列到序列（Seq2Seq）模型中，编码器的作用是：","options":{"A":"生成输出序列","B":"将输入序列编码为上下文向量","C":"进行分类","D":"增强数据"},"answer":"B","explanation":"编码器将输入序列（如一句话）压缩为一个固定长度的上下文向 量，包含输入的语义信息。"},{"id":242,"category":"深度学习","question":"以下哪个不是常见的图像预处理步骤？","options":{"A":"归一化","B":"标准化","C":"随机裁剪","D":"特征选择"},"answer":"D","explanation":"归一化、标准化和随机裁剪都是图像预处理常用操作，特征选择更 多用于传统机器学习。"},{"id":243,"category":"深度学习","question":"在深度学习中，梯度消失问题通常发生在：","options":{"A":"浅层网络","B":"激活函数导数过大","C":"深层网络的反向传播中","D":"使用ReLU时"},"answer":"C","explanation":"在深层网络中，反向传播时梯度通过连乘操作传递，若激活函数导 数小于1，梯度会指数级减小，导致前面层无法更新。"},{"id":244,"category":"深度学习","question":"以下哪种模型可以同时进行目标检测和实例分割？","options":{"A":"YOLO","B":"SSD","C":"MaskR-CNN","D":"FastR-CNN"},"answer":"C","explanation":"MaskR-CNN在FasterR-CNN基础上增加了掩码分支，能同时输出边 界框、类别和像素级分割掩码。"},{"id":245,"category":"深度学习","question":"在自然语言处理中，Transformer模型的编码器由多个相同的层堆叠而成， 每层包含：","options":{"A":"卷积层和池化层","B":"自注意力层和前馈神经网络","C":"LSTM单元","D":"生成器和判别器"},"answer":"B","explanation":"Transformer编码器每层包含一个多头自注意力机制和一个位置全连 接前馈网络。"},{"id":246,"category":"深度学习","question":"以下哪个指标用于衡量分类模型的性能？","options":{"A":"均方误差","B":"决定系数","C":"准确率","D":"对数损失"},"answer":"C","explanation":"准确率是分类任务中最直观的指标，表示预测正确的样本占总样本 的比例。"},{"id":247,"category":"深度学习","question":"在深度学习中，使用预训练模型（PretrainedModel）的主要优势是：","options":{"A":"从零开始训练","B":"利用在大规模数据上学到的特征，提升小数据集性能","C":"增加训练时间","D":"减少模型复杂度"},"answer":"B","explanation":"迁移学习利用预训练模型学到的通用特征（如边缘、纹理），在特 定任务上微调，能显著提升性能。"},{"id":248,"category":"深度学习","question":"以下哪种损失函数常用于二分类问题？","options":{"A":"多分类交叉熵","B":"二元交叉熵","C":"均方误差","D":"平均绝对误差"},"answer":"B","explanation":"二元交叉熵（BinaryCrossentropy）用于衡量两个类别之间的概率 分布差异。"},{"id":249,"category":"深度学习","question":"在卷积神经网络中，1x1卷积的主要作用不包括：","options":{"A":"减少通道数，降低计算量","B":"增加非线性","C":"改变特征图的空间尺寸","D":"跨通道信息融合"},"answer":"C","explanation":"1x1卷积主要用于通道间的线性组合和降维，不改变特征图的空间尺 寸（宽高）。"},{"id":250,"category":"深度学习","question":"以下哪个不是循环神经网络的门控机制？","options":{"A":"遗忘门","B":"输入门","C":"输出门","D":"卷积门"},"answer":"D","explanation":"LSTM包含遗忘门、输入门和输出门，用于控制信息的流动。卷积门 不是标准术语。"},{"id":251,"category":"深度学习","question":"在深度学习中，动量（Momentum）的作用是：","options":{"A":"随机丢弃神经元","B":"加速梯度下降，抑制震荡","C":"归一化输入","D":"增加学习率"},"answer":"B","explanation":"动量法模拟物理中的动量，累积历史梯度方向，使参数更新方向更 一致，加快收敛。"},{"id":252,"category":"深度学习","question":"以下哪种网络结构在ImageNet竞赛中取得了突破性成绩？","options":{"A":"LeNet","B":"AlexNet","C":"Perceptron","D":"HopfieldNetwork"},"answer":"B","explanation":"AlexNet在2012年ImageNet竞赛中以显著优势夺冠，开启了深度学 习的热潮。"},{"id":253,"category":"深度学习","question":"在目标检测中，非极大值抑制（NMS）用于：","options":{"A":"生成候选框","B":"提取特征","C":"去除冗余的检测框","D":"分类"},"answer":"C","explanation":"NMS通过抑制得分较低且与高分框重叠度高的框，保留最可能的检测 结果。"},{"id":254,"category":"深度学习","question":"以下哪个不是自然语言处理的应用？","options":{"A":"机器翻译","B":"语音识别","C":"图像分类","D":"情感分析"},"answer":"C","explanation":"图像分类属于计算机视觉领域，而机器翻译、语音识别和情感分析 都是NLP的应用。"},{"id":255,"category":"深度学习","question":"在深度学习中，过拟合的表现是：","options":{"A":"训练误差大，验证误差小","B":"训练误差小，验证误差大","C":"训练误差大，验证误差大","D":"训练误差小，验证误差小"},"answer":"B","explanation":"过拟合指模型在训练集上表现很好，但在未见过的验证/测试集上表 现差，泛化能力弱。"},{"id":256,"category":"深度学习","question":"以下哪种激活函数在深层网络中容易导致梯度消失？","options":{"A":"ReLU","B":"LeakyReLU","C":"Sigmoid","D":"ELU"},"answer":"C","explanation":"Sigmoid函数在输入值较大或较小时，导数接近0，反向传播时梯度 连乘会导致梯度消失。"},{"id":257,"category":"深度学习","question":"在生成模型中，变分自编码器（VAE）的损失函数包含：","options":{"A":"重建损失和KL散度","B":"交叉熵和准确率","C":"均方误差和R²","D":"梯度惩罚和对抗损失"},"answer":"A","explanation":"VAE的损失函数由两部分组成：重建损失（衡量生成质量）和KL散 度（衡量潜在分布与先验的差异）。"},{"id":258,"category":"深度学习","question":"以下哪个不是深度学习框架？","options":{"A":"Keras","B":"PyTorch","C":"TensorFlow","D":"MySQL"},"answer":"D","explanation":"MySQL是关系型数据库管理系统，而Keras、PyTorch和TensorFlow 都是深度学习框架。"},{"id":259,"category":"深度学习","question":"在图像分割中，像素级的分类任务称为：","options":{"A":"语义分割","B":"实例分割","C":"全景分割","D":"以上都是"},"answer":"D","explanation":"图像分割包括语义分割（区分类别）、实例分割（区分个体）和全 景分割（两者的结合）。"},{"id":260,"category":"深度学习","question":"在深度学习中，学习率衰减的目的是：","options":{"A":"加快初始训练","B":"在训练后期更精细地调整权重","C":"防止欠拟合","D":"增加模型复杂度"},"answer":"B","explanation":"随着训练进行，降低学习率可以使模型在接近最优解时更稳定，避 免在最小值附近震荡。"},{"id":261,"category":"深度学习","question":"以下哪种模型属于自回归语言模型？","options":{"A":"BERT","B":"GPT","C":"ELMo","D":"ULMFit"},"answer":"B","explanation":"GPT（GenerativePre-trainedTransformer）从左到右生成文本， 属于自回归模型。BERT是自编码模型。"},{"id":262,"category":"深度学习","question":"在卷积神经网络中，感受野（ReceptiveField）指的是：","options":{"A":"卷积核的大小","B":"特征图的通道数","C":"输出特征点对应输入图像的区域大小","D":"批量大小"},"answer":"C","explanation":"感受野表示输出特征图上的一个点，对应输入图像上的区域大小， 反映了网络看到的范围。"},{"id":263,"category":"深度学习","question":"以下哪个不是循环神经网络的缺点？","options":{"A":"训练速度快","B":"梯度消失/爆炸","C":"难以并行化","D":"记忆长序列困难"},"answer":"A","explanation":"RNN由于其序列依赖性，训练速度通常较慢，难以并行处理。"},{"id":264,"category":"深度学习","question":"在深度学习中，正则化的主要目的是：","options":{"A":"提高训练速度","B":"减少过拟合，提高泛化能力","C":"增加模型复杂度","D":"降低数据量"},"answer":"B","explanation":"正则化（如L1/L2、Dropout）通过限制模型复杂度，防止过拟合， 提升在测试集上的表现。"},{"id":265,"category":"深度学习","question":"以下哪种技术可以将高维数据可视化为二维或三维？","options":{"A":"PCA","B":"t-SNE","C":"LDA","D":"以上都是"},"answer":"D","explanation":"主成分分析（PCA）、t-分布随机邻域嵌入（t-SNE）和线性判别分 析（LDA）都可用于降维可视化。"},{"id":266,"category":"深度学习","question":"在目标检测中，YOLO算法的核心思想是：","options":{"A":"将图像划分为网格，每个网格预测边界框和类别","B":"使用选择性搜索生成候选框","C":"只进行分类","D":"只进行分割"},"answer":"A","explanation":"YOLO（YouOnlyLookOnce）将检测视为回归问题，将图像分成网 格，每个网格负责预测中心点落在其中的目标。"},{"id":267,"category":"深度学习","question":"以下哪个不是激活函数的性质要求？","options":{"A":"非线性","B":"可微性（几乎处处）","C":"计算简单","D":"线性"},"answer":"D","explanation":"激活函数必须引入非线性，否则多层网络等价于单层线性变换。"},{"id":268,"category":"深度学习","question":"在深度学习中，批量归一化通常在哪个操作之后应用？","options":{"A":"卷积/全连接","B":"激活函数","C":"池化","D":"Dropout"},"answer":"A","explanation":"通常的顺序是：卷积/全连接->批量归一化->激活函数。"},{"id":269,"category":"深度学习","question":"以下哪种模型可以处理图结构数据？","options":{"A":"CNN","B":"RNN","C":"GNN","D":"Transformer"},"answer":"C","explanation":"图神经网络（GNN）专门设计用于处理图结构数据，如社交网络、分 子结构。"},{"id":270,"category":"深度学习","question":"在自然语言处理中，词干提取（Stemming）和词形还原（Lemmatization） 的目的是：","options":{"A":"增加词汇多样性","B":"将单词还原为其词根形式","C":"翻译单词","D":"语音合成"},"answer":"B","explanation":"两者都是文本规范化技术，将不同形态的单词（如“running”、 “ran”）还原为词根（如“run”）。"},{"id":271,"category":"深度学习","question":"以下哪个不是深度学习在计算机视觉中的应用？","options":{"A":"图像分类","B":"目标检测","C":"机器翻译","D":"人脸识别"},"answer":"C","explanation":"机器翻译是自然语言处理的任务，而其他选项都是计算机视觉的经 典应用。"},{"id":272,"category":"深度学习","question":"在深度学习训练中，验证集的作用是：","options":{"A":"最终评估模型性能","B":"调整超参数和选择模型","C":"训练模型参数","D":"收集原始数据"},"answer":"B","explanation":"验证集用于在训练过程中监控模型性能，选择最佳的超参数（如学 习率、网络深度）和防止过拟合。"},{"id":273,"category":"深度学习","question":"以下哪种损失函数对异常值不敏感？","options":{"A":"均方误差","B":"平均绝对误差","C":"交叉熵","D":"HingeLoss"},"answer":"B","explanation":"平均绝对误差（MAE）对异常值的惩罚是线性的，而均方误差 （MSE）是平方的，因此MAE更鲁棒。"},{"id":274,"category":"深度学习","question":"在生成对抗网络中，判别器的损失函数通常使用：","options":{"A":"均方误差","B":"二元交叉熵","C":"多分类交叉熵","D":"KL散度"},"answer":"B","explanation":"判别器的任务是二分类（真实vs生成），因此通常使用二元交叉熵 损失。"},{"id":275,"category":"深度学习","question":"以下哪个不是卷积神经网络的超参数？","options":{"A":"卷积核大小","B":"学习率","C":"权重","D":"步幅"},"answer":"C","explanation":"权重是模型通过训练学习到的参数，而卷积核大小、学习率、步幅 是人为设定的超参数。"},{"id":276,"category":"深度学习","question":"在序列模型中，TeacherForcing是一种用于：","options":{"A":"加速训练的技术","B":"训练RNN的方法，使用真实输出作为下一时刻输入","C":"防止梯度消失","D":"数据增强"},"answer":"B","explanation":"TeacherForcing在训练时将真实的目标序列作为解码器的输入，而 不是使用模型自己上一时刻的预测。"},{"id":277,"category":"深度学习","question":"以下哪种方法可以增加卷积神经网络的感受野？","options":{"A":"增加池化层","B":"减小卷积核","C":"增加批量大小","D":"使用Dropout"},"answer":"A","explanation":"池化层通过下采样扩大后续层的感受野，使网络能看到更大的输入 区域。"},{"id":278,"category":"深度学习","question":"在深度学习中，残差块（ResidualBlock）的数学表达式是：","options":{"A":"H(x)=x","B":"H(x)=F(x)+x","C":"H(x)=F(x)*x","D":"H(x)=F(x)"},"answer":"B","explanation":"残差块学习残差函数F(x)，最终输出为F(x)+x，其中x是恒等映 射。"},{"id":279,"category":"深度学习","question":"以下哪个不是常见的优化器参数？","options":{"A":"学习率","B":"动量","C":"批量大小","D":"权重"},"answer":"D","explanation":"权重是模型参数，由优化器更新。学习率、动量、批量大小（虽常 视为超参）影响优化过程。"},{"id":280,"category":"深度学习","question":"在图像生成中，StyleGAN主要通过控制什么来生成不同风格的图像？","options":{"A":"噪声向量","B":"风格向量（StyleVector）","C":"类别标签","D":"激活函数"},"answer":"B","explanation":"StyleGAN引入了风格向量，通过自适应实例归一化（AdaIN）控制生 成图像的风格（如粗细、颜色等）。"},{"id":281,"category":"深度学习","question":"在深度学习中，交叉熵损失函数衡量的是：","options":{"A":"两个概率分布之间的差异","B":"预测值与真实值的平方差","C":"梯度的大小","D":"模型的复杂度"},"answer":"A","explanation":"交叉熵用于衡量模型预测的概率分布与真实标签（通常为one-hot 编码）之间的差异。"},{"id":282,"category":"深度学习","question":"以下哪种网络结构采用了Inception模块？","options":{"A":"ResNet","B":"GoogLeNet","C":"VGGNet","D":"DenseNet"},"answer":"B","explanation":"GoogLeNet（Inceptionv1）提出了Inception模块，使用不同大小 的卷积核并行提取特征。"},{"id":283,"category":"深度学习","question":"在自然语言处理中，位置编码（PositionalEncoding）的目的是：","options":{"A":"为词嵌入添加位置信息","B":"增加词向量的维度","C":"进行词性标注","D":"分词"},"answer":"A","explanation":"由于Transformer没有循环结构，位置编码被加到词嵌入中，以提 供序列中单词的位置信息。"},{"id":284,"category":"深度学习","question":"以下哪个不是过拟合的迹象？","options":{"A":"训练准确率持续上升","B":"验证损失开始上升","C":"训练损失持续下降","D":"验证准确率与训练准确率差距变小"},"answer":"D","explanation":"验证准确率与训练准确率差距变小说明模型泛化能力好，不是过拟 合。过拟合时差距会变大。"},{"id":285,"category":"深度学习","question":"在深度学习中，使用GPU的主要优势是：","options":{"A":"串行计算能力强","B":"并行计算能力强","C":"存储容量大","D":"控制逻辑复杂"},"answer":"B","explanation":"深度学习涉及大量矩阵运算，GPU拥有数千个核心，擅长并行计算， 能显著加速训练。"},{"id":286,"category":"深度学习","question":"以下哪种方法不属于模型集成？","options":{"A":"Bagging","B":"Boosting","C":"Dropout","D":"Stacking"},"answer":"C","explanation":"Dropout是一种正则化技术，在训练时随机丢弃神经元，不属于模型 集成方法。"},{"id":287,"category":"深度学习","question":"在目标检测中，mAP（meanAveragePrecision）是：","options":{"A":"单一类别的精度","B":"所有类别AP的平均值","C":"检测速度","D":"模型参数量"},"answer":"B","explanation":"mAP是目标检测的核心指标，计算每个类别的平均精度（AP）后取平 均值。"},{"id":288,"category":"深度学习","question":"以下哪个不是循环神经网络的门控变体？","options":{"A":"LSTM","B":"GRU","C":"RNN","D":"SRU"},"answer":"C","explanation":"标准RNN没有门控机制，LSTM、GRU和SRU（SimpleRecurrent Unit）都引入了门控来改进性能。"},{"id":289,"category":"深度学习","question":"在深度学习中，权重共享主要出现在：","options":{"A":"全连接层","B":"卷积层","C":"池化层","D":"Dropout层"},"answer":"B","explanation":"卷积层中，同一个卷积核（滤波器）在整个输入上滑动并使用相同 的权重，这称为权重共享。"},{"id":290,"category":"深度学习","question":"以下哪种激活函数的输出范围是(-1,1)？","options":{"A":"Sigmoid","B":"Tanh","C":"ReLU","D":"Softmax"},"answer":"B","explanation":"Tanh（双曲正切）函数将输入压缩到(-1,1)之间，且关于原点对 称。"},{"id":291,"category":"深度学习","question":"在图像处理中，转置卷积（TransposedConvolution）通常用于：","options":{"A":"特征提取","B":"上采样/生成更大尺寸的特征图","C":"降维","D":"分类"},"answer":"B","explanation":"转置卷积（常被称为反卷积）通过学习的方式增加特征图的尺寸， 常用于分割和生成模型的解码器。"},{"id":292,"category":"深度学习","question":"在深度学习中，早停法（EarlyStopping）是一种：","options":{"A":"模型集成方法","B":"正则化方法","C":"数据增强方法","D":"超参数优化方法"},"answer":"B","explanation":"早停法在验证误差不再下降时停止训练，防止模型在训练集上过拟 合，属于一种正则化手段。"},{"id":293,"category":"深度学习","question":"以下哪个不是自然语言处理的预训练模型？","options":{"A":"BERT","B":"GPT-3","C":"ResNet-50","D":"RoBERTa"},"answer":"C","explanation":"ResNet-50是图像领域的经典卷积神经网络模型，而BERT、GPT-3和 RoBERTa是NLP预训练模型。"},{"id":294,"category":"深度学习","question":"在深度学习中，动量系数（Momentum）通常设置为接近：","options":{"A":"0","B":"0.9","C":"1","D":"2"},"answer":"B","explanation":"动量系数通常设置为0.9或0.99，以累积历史梯度，加速收敛。"},{"id":295,"category":"深度学习","question":"以下哪种情况需要使用one-hot编码？","options":{"A":"连续数值特征","B":"有序分类特征","C":"无序分类特征","D":"文本序列"},"answer":"C","explanation":"对于无序的分类特征（如颜色：红、绿、蓝），使用one-hot编码 将其转换为二进制向量，避免引入错误的序关系。"},{"id":296,"category":"深度学习","question":"在生成对抗网络中，模式崩溃（ModeCollapse）是指：","options":{"A":"生成器生成多样化的样本","B":"生成器总是生成相似或相同的样本","C":"判别器完美区分真假","D":"训练迅速收敛"},"answer":"B","explanation":"模式崩溃是GAN训练中的常见问题，生成器发现一个能欺骗判别器 的样本后，便不断生成该样本，缺乏多样性。"},{"id":297,"category":"深度学习","question":"以下哪个不是深度学习模型的部署方式？","options":{"A":"云端API","B":"边缘设备","C":"模型服务化","D":"纸质打印"},"answer":"D","explanation":"深度学习模型通常部署在云端服务器、边缘设备（如手机、摄像 头）或通过API服务化，纸质打印无法运行模型。"},{"id":298,"category":"深度学习","question":"在卷积神经网络中，全局平均池化（GlobalAveragePooling）的作用 是：","options":{"A":"替代全连接层，将每个特征图压缩为一个数值","B":"增加特征图尺寸","C":"提取边缘特征","D":"进行数据增强"},"answer":"A","explanation":"全局平均池化对每个通道的整个特征图求平均值，输出一个通道对 应的数值，常用于替代全连接层以减少参数。"},{"id":299,"category":"深度学习","question":"以下哪种优化算法属于二阶方法？","options":{"A":"SGD","B":"Adam","C":"牛顿法","D":"RMSprop"},"answer":"C","explanation":"牛顿法使用损失函数的二阶导数（Hessian矩阵）信息进行优化，属 于二阶优化方法。"},{"id":300,"category":"深度学习","question":"在深度学习中，自监督学习是指：","options":{"A":"使用大量标注数据","B":"从数据本身自动生成监督信号进行预训练","C":"无监督聚类","D":"强化学习"},"answer":"B","explanation":"自监督学习通过设计预任务（如预测被遮挡的词、预测图像旋转角 度）从未标注数据中自动生成标签，进行预训练。"},{"id":301,"category":"计算机视觉","question":"在数字图像处理中，一幅彩色图像通常由哪三个颜色通道组成？","options":{"A":"黑、白、灰","B":"红、绿、蓝","C":"青、品红、黄","D":"红、黄、蓝"},"answer":"B","explanation":"在计算机视觉和数字图像处理中，最常见的彩色图像格式是RGB （红、绿、蓝）三通道图像。"},{"id":302,"category":"计算机视觉","question":"OpenCV中用于读取图像文件的函数是：","options":{"A":"cv2.imshow()","B":"cv2.imread()","C":"cv2.imwrite()","D":"cv2.VideoCapture()"},"answer":"B","explanation":"cv2.imread()函数用于从文件中加载图像；cv2.imshow()用于显示 图像，cv2.imwrite()用于保存图像。"},{"id":303,"category":"计算机视觉","question":"灰度图像的像素值范围通常是：","options":{"A":"-255到255","B":"0到100","C":"0到255","D":"0到1"},"answer":"C","explanation":"在8位灰度图像中，像素值0代表黑色，255代表白色，中间值代表 不同的灰度级。"},{"id":304,"category":"计算机视觉","question":"在OpenCV中，图像数据通常被存储为什么类型的对象？","options":{"A":"列表","B":"元组","C":"NumPy数组","D":"字典"},"answer":"C","explanation":"OpenCV使用NumPy数组来存储图像数据，这使得图像可以方便地进 行数学运算和切片操作。"},{"id":305,"category":"计算机视觉","question":"以下哪种滤波器主要用于去除图像中的“椒盐”噪声？","options":{"A":"均值滤波","B":"高斯滤波","C":"中值滤波","D":"拉普拉斯滤波"},"answer":"C","explanation":"中值滤波通过用邻域像素的中值代替中心像素值，能有效去除椒盐 噪声，同时较好地保留边缘。"},{"id":306,"category":"计算机视觉","question":"Canny边缘检测算法中，用于连接边缘的步骤是：","options":{"A":"非极大值抑制","B":"双阈值检测","C":"滞后阈值处理（边缘跟踪）","D":"图像平滑"},"answer":"C","explanation":"Canny算法的最后一步是使用高低阈值进行滞后阈值处理，通过连接 强边缘点和弱边缘点来形成完整的边缘。"},{"id":307,"category":"计算机视觉","question":"在OpenCV中，用于将BGR图像转换为灰度图像的颜色空间转换标志是：","options":{"A":"cv2.COLOR_BGR2RGB","B":"cv2.COLOR_GRAY2BGR","C":"cv2.COLOR_BGR2GRAY","D":"cv2.COLOR_RGB2GRAY"},"answer":"C","explanation":"cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)用于将BGR格式的彩色图 像转换为单通道灰度图像。"},{"id":308,"category":"计算机视觉","question":"图像的分辨率指的是：","options":{"A":"图像的颜色深度","B":"图像文件的大小","C":"图像的像素密度（长宽像素数）","D":"图像的亮度"},"answer":"C","explanation":"图像分辨率通常指图像在宽度和高度方向上的像素数量，如 1920x1080。"},{"id":309,"category":"计算机视觉","question":"以下哪种操作属于图像的几何变换？","options":{"A":"直方图均衡化","B":"图像缩放","C":"边缘检测","D":"噪声添加"},"answer":"B","explanation":"图像缩放、旋转、平移等都属于几何变换，它们改变图像的空间位 置或大小。"},{"id":310,"category":"计算机视觉","question":"在形态学操作中，腐蚀操作的主要效果是：","options":{"A":"扩大前景物体","B":"缩小前景物体","C":"平滑物体边界","D":"填充孔洞"},"answer":"B","explanation":"腐蚀操作会“腐蚀”掉前景物体的边界，使物体变小，常用于去除 小的白色噪点。"},{"id":311,"category":"计算机视觉","question":"以下哪个函数用于在图像上绘制圆形？","options":{"A":"cv2.line()","B":"cv2.rectangle()","C":"cv2.circle()","D":"cv2.polylines()"},"answer":"C","explanation":"cv2.circle(img,center,radius,color,thickness)用于在图像 上绘制圆形。"},{"id":312,"category":"计算机视觉","question":"Sobel算子主要用于检测图像的：","options":{"A":"角点","B":"边缘","C":"圆形","D":"颜色直方图"},"answer":"B","explanation":"Sobel算子是一种离散微分算子，用于计算图像灰度的梯度近似值， 从而检测边缘。"},{"id":313,"category":"计算机视觉","question":"在OpenCV中，用于获取图像尺寸（高、宽、通道数）的属性是：","options":{"A":"img.shape","B":"img.size","C":"img.dtype","D":"img.max()"},"answer":"A","explanation":"img.shape返回一个元组，对于彩色图像是(高度,宽度,通道数)， 对于灰度图像是(高度,宽度)。"},{"id":314,"category":"计算机视觉","question":"以下哪种颜色空间更适合进行肤色检测？","options":{"A":"RGB","B":"HSV","C":"CMYK","D":"Lab"},"answer":"B","explanation":"HSV颜色空间将颜色信息（色调H、饱和度S）与亮度V分离，使得 基于颜色的分割（如肤色）更容易实现。"},{"id":315,"category":"计算机视觉","question":"直方图均衡化的主要目的是：","options":{"A":"去除噪声","B":"增强图像对比度","C":"检测边缘","D":"降低分辨率"},"answer":"B","explanation":"直方图均衡化通过重新分配像素强度值，扩展图像的动态范围，从 而增强图像的全局对比度。"},{"id":316,"category":"计算机视觉","question":"在OpenCV中，用于保存图像到文件的函数是：","options":{"A":"cv2.read()","B":"cv2.store()","C":"cv2.imwrite()","D":"cv2.save()"},"answer":"C","explanation":"cv2.imwrite('filename.jpg',img)用于将图像数组保存为文件。"},{"id":317,"category":"计算机视觉","question":"以下哪种插值方法在图像放大时效果最好，但计算量最大？","options":{"A":"最近邻插值","B":"双线性插值","C":"双三次插值","D":"面积插值"},"answer":"C","explanation":"双三次插值考虑了更多的邻域像素，生成的图像质量更高，边缘更 平滑，但计算成本也更高。"},{"id":318,"category":"计算机视觉","question":"图像金字塔的主要用途是：","options":{"A":"多尺度目标检测","B":"图像加密","C":"颜色转换","D":"数据压缩"},"answer":"A","explanation":"图像金字塔通过构建不同分辨率的图像序列，用于在不同尺度下检 测目标（如人脸检测）。"},{"id":319,"category":"计算机视觉","question":"在形态学操作中，开运算指的是：","options":{"A":"先腐蚀后膨胀","B":"先膨胀后腐蚀","C":"腐蚀的补集","D":"膨胀的补集"},"answer":"A","explanation":"开运算（先腐蚀后膨胀）可以去除小的噪点物体，同时保持大物体 的形状基本不变。"},{"id":320,"category":"计算机视觉","question":"以下哪个函数用于创建一个指定大小的黑色图像？","options":{"A":"np.zeros()","B":"np.ones()","C":"np.random.rand()","D":"cv2.create()"},"answer":"A","explanation":"np.zeros((height,width,channels),np.uint8)可以创建一个全 黑的图像数组。"},{"id":321,"category":"计算机视觉","question":"在OpenCV中，用于读取视频文件或摄像头的类是：","options":{"A":"cv2.Image()","B":"cv2.VideoCapture()","C":"cv2.Video()","D":"cv2.Reader()"},"answer":"B","explanation":"cv2.VideoCapture(0)用于打开摄像头， cv2.VideoCapture('video.mp4')用于读取视频文件。"},{"id":322,"category":"计算机视觉","question":"以下哪种算子对噪声最敏感？","options":{"A":"Roberts算子","B":"Prewitt算子","C":"Sobel算子","D":"Laplacian算子"},"answer":"D","explanation":"拉普拉斯算子是二阶微分算子，对噪声非常敏感，通常需要先对图 像进行高斯平滑处理（如LoG）。"},{"id":323,"category":"计算机视觉","question":"在Hough变换中，通常用于检测图像中的：","options":{"A":"直线和圆形","B":"角点","C":"颜色","D":"纹理"},"answer":"A","explanation":"霍夫变换是一种特征提取技术，常用于检测图像中的直线（霍夫线 变换）和圆（霍夫圆变换）。"},{"id":324,"category":"计算机视觉","question":"以下哪个属性返回图像的总像素数目？","options":{"A":"img.shape","B":"img.size","C":"img.dtype","D":"img.ndim"},"answer":"B","explanation":"img.size返回图像数组中元素的总数（即高度×宽度×通道 数）。"},{"id":325,"category":"计算机视觉","question":"在OpenCV的绘图函数中，thickness参数为-1时通常表示：","options":{"A":"线条最细","B":"实心填充","C":"隐藏图形","D":"颜色反转"},"answer":"B","explanation":"在cv2.circle()或cv2.rectangle()中，thickness=-1表示用指定 颜色填充整个图形。"},{"id":326,"category":"计算机视觉","question":"以下哪种滤波器属于非线性滤波器？","options":{"A":"均值滤波","B":"高斯滤波","C":"中值滤波","D":"方框滤波"},"answer":"C","explanation":"中值滤波的输出值是邻域像素的中值，不是输入像素的线性组合， 因此属于非线性滤波。"},{"id":327,"category":"计算机视觉","question":"仿射变换保持了图像的：","options":{"A":"平行性","B":"角度","C":"长度","D":"面积"},"answer":"A","explanation":"仿射变换（如平移、旋转、缩放、剪切）会保持图像中直线的平行 性，但角度和长度可能改变。"},{"id":328,"category":"计算机视觉","question":"在SURF特征检测算法中，\"SURF\"的全称是：","options":{"A":"Speeded-UpRobustFeatures","B":"Scale-InvariantFeatureTransform","C":"SimpleFeatures","D":"SpatialUniformRegionsFilter"},"answer":"A","explanation":"SURF（加速稳健特征）是对SIFT算法的改进，通过使用积分图像和 盒子滤波器来提高计算速度。"},{"id":329,"category":"计算机视觉","question":"以下哪个函数用于调整图像的亮度和对比度？","options":{"A":"cv2.adjustGamma()","B":"cv2.convertScaleAbs()","C":"cv2.equalizeHist()","D":"以上都可以"},"answer":"D","explanation":"cv2.adjustGamma通过伽马校正调整亮度；cv2.convertScaleAbs通 过线性变换调整亮度和对比度；直方图均衡化也能改变亮度分布。"},{"id":330,"category":"计算机视觉","question":"在OpenCV中，鼠标回调函数的事件参数（event）不包括：","options":{"A":"cv2.EVENT_MOUSEMOVE","B":"cv2.EVENT_LBUTTONDOWN","C":"cv2.EVENT_KEYPRESS","D":"cv2.EVENT_RBUTTONUP"},"answer":"C","explanation":"cv2.EVENT_KEYPRESS是键盘事件，属于waitKey()函数的返回值， 不属于鼠标回调的事件类型。"},{"id":331,"category":"计算机视觉","question":"以下哪种图像格式通常是有损压缩？","options":{"A":"PNG","B":"BMP","C":"JPEG","D":"TIFF"},"answer":"C","explanation":"JPEG格式通过牺牲部分图像细节来大幅减小文件大小，属于有损压 缩；PNG是无损压缩。"},{"id":332,"category":"计算机视觉","question":"图像的位深度（BitDepth）指的是：","options":{"A":"图像的文件大小","B":"每个像素用于表示颜色的位数","C":"图像的分辨率","D":"图像的通道数"},"answer":"B","explanation":"例如，8位图像每个通道有2^8=256个灰度级，24位真彩色图像每 个像素由24位（红绿蓝各8位）表示。"},{"id":333,"category":"计算机视觉","question":"在Canny边缘检测中，高阈值和低阈值的关系通常是：","options":{"A":"低阈值>高阈值","B":"高阈值>低阈值","C":"两者必须相等","D":"无关"},"answer":"B","explanation":"高阈值用于检测强边缘，低阈值用于检测弱边缘。通常高阈值是低 阈值的2到3倍。"},{"id":334,"category":"计算机视觉","question":"以下哪个操作可以将两个图像进行按位与运算？","options":{"A":"cv2.add()","B":"cv2.subtract()","C":"cv2.bitwise_and()","D":"cv2.multiply()"},"answer":"C","explanation":"cv2.bitwise_and()用于对两个图像的像素进行按位与操作，常用于 掩码操作。"},{"id":335,"category":"计算机视觉","question":"在OpenCV中，用于显示图像的函数是：","options":{"A":"cv2.show()","B":"cv2.display()","C":"cv2.imshow()","D":"cv2.plot()"},"answer":"C","explanation":"cv2.imshow('window_name',img)用于在指定窗口中显示图像。"},{"id":336,"category":"计算机视觉","question":"以下哪种颜色空间常用于打印机？","options":{"A":"RGB","B":"HSV","C":"CMYK","D":"Lab"},"answer":"C","explanation":"CMYK（青、品红、黄、黑）是印刷四分色模式，用于彩色打印。"},{"id":337,"category":"计算机视觉","question":"形态学梯度的定义是：","options":{"A":"膨胀-腐蚀","B":"原图-腐蚀","C":"膨胀-原图","D":"开运算-闭运算"},"answer":"A","explanation":"形态学梯度定义为图像的膨胀结果减去腐蚀结果，结果突出显示物 体的轮廓。"},{"id":338,"category":"计算机视觉","question":"在特征匹配中，BFMatcher代表：","options":{"A":"BestFeatureMatcher","B":"BruteForceMatcher","C":"BinaryFeatureMatcher","D":"BalancedFilterMatcher"},"answer":"B","explanation":"BFMatcher（暴力匹配器）通过尝试所有可能的匹配来寻找最佳匹 配，计算量大但准确。"},{"id":339,"category":"计算机视觉","question":"以下哪个函数用于计算图像的梯度方向和大小？","options":{"A":"cv2.Sobel()","B":"cv2.cartToPolar()","C":"cv2.Canny()","D":"cv2.Laplacian()"},"answer":"B","explanation":"在计算出Sobel梯度dx和dy后，使用cv2.cartToPolar(dx,dy)可 以计算出梯度的幅值和角度。"},{"id":340,"category":"计算机视觉","question":"在OpenCV的绘图函数中，color参数(255,0,0)代表：","options":{"A":"红色","B":"绿色","C":"蓝色","D":"黑色"},"answer":"C","explanation":"OpenCV默认使用BGR颜色顺序，(255,0,0)表示蓝色通道为255， 绿色和红色为0，即纯蓝色。"},{"id":341,"category":"计算机视觉","question":"以下哪种噪声是由图像传感器温度引起的？","options":{"A":"椒盐噪声","B":"高斯噪声","C":"散粒噪声","D":"热噪声"},"answer":"D","explanation":"热噪声（也称约翰逊噪声）是由导体中载流子的热运动引起的，与 温度密切相关。"},{"id":342,"category":"计算机视觉","question":"在直方图反向投影中，主要用于：","options":{"A":"图像分割","B":"增强对比度","C":"去除噪声","D":"边缘检测"},"answer":"A","explanation":"直方图反向投影通过查找图像中与目标直方图模型最匹配的区域， 常用于基于颜色的概率分割。"},{"id":343,"category":"计算机视觉","question":"以下哪个函数用于获取图像的ROI（感兴趣区域）？","options":{"A":"img[rows,cols]","B":"img[y:y+h,x:x+w]","C":"cv2.getROI()","D":"以上都是"},"answer":"B","explanation":"通过NumPy数组的切片操作img[y:y+h,x:x+w]可以方便地获取矩形 区域的ROI。"},{"id":344,"category":"计算机视觉","question":"在视频处理中，帧率（FPS）指的是：","options":{"A":"每秒传输的字节数","B":"每秒显示的图像帧数","C":"图像的分辨率","D":"视频的编码格式"},"answer":"B","explanation":"帧率（FramesPerSecond）决定了视频的流畅度，常见的有 24fps、30fps、60fps等。"},{"id":345,"category":"计算机视觉","question":"以下哪种变换可以将图像从空间域转换到频率域？","options":{"A":"傅里叶变换","B":"霍夫变换","C":"几何变换","D":"仿射变换"},"answer":"A","explanation":"傅里叶变换将图像分解为不同频率的正弦和余弦分量，用于频域滤 波（如低通、高通滤波）。"},{"id":346,"category":"计算机视觉","question":"在SIFT算法中，尺度不变性是通过构建什么实现的？","options":{"A":"图像金字塔","B":"高斯金字塔","C":"DoG金字塔","D":"拉普拉斯金字塔"},"answer":"C","explanation":"SIFT通过构建高斯差（DoG）金字塔来检测在不同尺度下稳定的特征 点。"},{"id":347,"category":"计算机视觉","question":"以下哪个函数用于在图像上添加文字？","options":{"A":"cv2.putText()","B":"cv2.addText()","C":"cv2.text()","D":"cv2.write()"},"answer":"A","explanation":"cv2.putText(img,text,org,font,fontScale,color, thickness)用于在图像上绘制文本。"},{"id":348,"category":"计算机视觉","question":"在OpenCV中，用于等待键盘输入的函数是：","options":{"A":"cv2.waitKey()","B":"cv2.getkey()","C":"input()","D":"cv2.sleep()"},"answer":"A","explanation":"cv2.waitKey(delay)等待指定毫秒内的键盘输入，常用于控制视频 播放的帧率。"},{"id":349,"category":"计算机视觉","question":"以下哪种插值方法在图像缩小（缩小尺寸）时推荐使用？","options":{"A":"cv2.INTER_NEAREST","B":"cv2.INTER_LINEAR","C":"cv2.INTER_CUBIC","D":"cv2.INTER_AREA"},"answer":"D","explanation":"cv2.INTER_AREA利用像素区域关系进行重采样，在图像缩小（下采 样）时效果最好，能有效避免混叠效应。"},{"id":350,"category":"计算机视觉","question":"在颜色空间转换中，将BGR转换为HSV应使用标志：","options":{"A":"cv2.COLOR_BGR2RGB","B":"cv2.COLOR_BGR2HSV","C":"cv2.COLOR_RGB2HSV","D":"cv2.COLOR_GRAY2BGR"},"answer":"B","explanation":"cv2.cvtColor(img,cv2.COLOR_BGR2HSV)用于将BGR图像转换为HSV 图像。"},{"id":351,"category":"计算机视觉","question":"以下哪种形态学操作可以填充前景物体中的小孔？","options":{"A":"腐蚀","B":"膨胀","C":"闭运算","D":"开运算"},"answer":"C","explanation":"闭运算（先膨胀后腐蚀）可以连接邻近的物体，平滑轮廓，并填充 前景物体内部的小孔。"},{"id":352,"category":"计算机视觉","question":"在特征检测中，Harris角点检测基于什么原理？","options":{"A":"梯度变化","B":"自相关函数","C":"直方图分布","D":"频率变换"},"answer":"B","explanation":"Harris角点检测通过分析局部窗口在各个方向上移动时的灰度变化 （自相关矩阵）来判断是否为角点。"},{"id":353,"category":"计算机视觉","question":"以下哪个函数用于计算两个图像的结构相似性（SSIM）？","options":{"A":"cv2.PSNR()","B":"cv2.matchTemplate()","C":"skimage.metrics.structural_similarity(注：OpenCV原生不直接提 供SSIM，但常考此概念)","D":"cv2.compare()"},"answer":"C","explanation":"虽然OpenCV没有直接的SSIM函数（通常需要自己实现或使用 skimage），但在图像质量评估中，SSIM是一个重要指标，用于衡量两幅图 像的结构相似度。"},{"id":354,"category":"计算机视觉","question":"在图像混合（图像融合）中，常用的加权叠加公式是：","options":{"A":"dst=src1+src2","B":"dst=src1*alpha+src2*(1-alpha)","C":"dst=src1-src2","D":"dst=max(src1,src2)"},"answer":"B","explanation":"加权混合（Alphablending）通过调整alpha值来控制两张图像的 透明度叠加效果。"},{"id":355,"category":"计算机视觉","question":"在OpenCV中，用于释放视频捕获对象资源的函数是：","options":{"A":"cv2.destroyAllWindows()","B":"cap.release()","C":"img.close()","D":"cv2.exit()"},"answer":"B","explanation":"在使用cv2.VideoCapture()读取视频后，应调用cap.release()来 释放摄像头或视频文件的资源。"},{"id":356,"category":"计算机视觉","question":"以下哪种滤波器可以锐化图像？","options":{"A":"低通滤波器","B":"均值滤波器","C":"高通滤波器","D":"中值滤波器"},"answer":"C","explanation":"高通滤波器允许高频分量（如边缘、细节）通过，抑制低频分量 （平滑区域），从而使图像看起来更锐利。"},{"id":357,"category":"计算机视觉","question":"在模板匹配中，用于寻找匹配位置的函数是：","options":{"A":"cv2.matchTemplate()","B":"cv2.minMaxLoc()","C":"cv2.findNonZero()","D":"A和B"},"answer":"D","explanation":"通常先使用cv2.matchTemplate()计算匹配得分，再使用 cv2.minMaxLoc()找到得分最高（或最低，取决于方法）的位置。"},{"id":358,"category":"计算机视觉","question":"以下哪个函数用于计算图像的傅里叶变换？","options":{"A":"cv2.fft()","B":"cv2.dft()","C":"cv2.transform()","D":"cv2.frequency()"},"answer":"B","explanation":"cv2.dft()用于计算离散傅里叶变换；cv2.idft()用于逆变换。"},{"id":359,"category":"计算机视觉","question":"在图像二值化中，Otsu's方法（大津算法）的主要优点是：","options":{"A":"计算速度快","B":"能自动确定最佳阈值","C":"适用于彩色图像","D":"不需要输入图像"},"answer":"B","explanation":"Otsu算法通过最大化类间方差自动寻找一个全局阈值，非常适合双 峰直方图的图像。"},{"id":360,"category":"计算机视觉","question":"在特征匹配中，FLANN代表：","options":{"A":"FastLibraryforApproximateNearestNeighbors","B":"FastLinearAnalysisNeuralNetwork","C":"FeatureLabelingandNamingNetwork","D":"FastLearningAlgorithmforNeuralNetworks"},"answer":"A","explanation":"FLANN是一个用于快速最近邻搜索的库，在处理大量特征点匹配时比 暴力匹配更高效。"},{"id":361,"category":"计算机视觉","question":"以下哪种操作可以将彩色图像转换为二值图像？","options":{"A":"灰度化","B":"二值化","C":"滤波","D":"边缘检测"},"answer":"B","explanation":"二值化将灰度图像转换为只有黑白两种像素值的图像，通常基于一 个阈值。"},{"id":362,"category":"计算机视觉","question":"在OpenCV中，用于绘制多边形的函数是：","options":{"A":"cv2.line()","B":"cv2.circle()","C":"cv2.polylines()","D":"cv2.rectangle()"},"answer":"C","explanation":"cv2.polylines()可以绘制由多个点连接而成的多边形。"},{"id":363,"category":"计算机视觉","question":"以下哪个不是图像噪声的类型？","options":{"A":"高斯噪声","B":"椒盐噪声","C":"泊松噪声","D":"渐变噪声"},"answer":"D","explanation":"高斯噪声、椒盐噪声和泊松噪声是常见的图像噪声模型，而渐变通 常指颜色的平滑过渡，不是噪声。"},{"id":364,"category":"计算机视觉","question":"在Canny边缘检测中，非极大值抑制的作用是：","options":{"A":"去除虚假边缘","B":"细化边缘","C":"连接断开的边缘","D":"平滑图像"},"answer":"B","explanation":"非极大值抑制将梯度方向上不是局部最大的像素值抑制为0，从而将 宽的边缘响应细化为单像素宽度的边缘。"},{"id":365,"category":"计算机视觉","question":"以下哪种颜色空间中，三个分量是相互独立的？","options":{"A":"RGB","B":"HSV","C":"YUV","D":"Lab"},"answer":"D","explanation":"Lab颜色空间设计的初衷是感知均匀，其中L代表亮度，a和b代表 颜色对立维度，三个分量相对独立。"},{"id":366,"category":"计算机视觉","question":"在图像几何变换中，旋转变换矩阵通常由哪个函数生成？","options":{"A":"cv2.getAffineTransform()","B":"cv2.getRotationMatrix2D()","C":"cv2.getPerspectiveTransform()","D":"cv2.transform()"},"answer":"B","explanation":"cv2.getRotationMatrix2D(center,angle,scale)用于生成2D旋 转变换矩阵。"},{"id":367,"category":"计算机视觉","question":"以下哪个函数用于计算图像的直方图？","options":{"A":"cv2.histogram()","B":"cv2.calcHist()","C":"cv2.plotHist()","D":"cv2.analyze()"},"answer":"B","explanation":"cv2.calcHist([images],channels,mask,histSize,ranges)用 于计算图像的直方图。"},{"id":368,"category":"计算机视觉","question":"在目标跟踪中，光流法主要用于：","options":{"A":"检测静态物体","B":"跟踪特征点在连续帧间的运动","C":"识别物体类别","D":"分割背景"},"answer":"B","explanation":"光流法描述了物体在图像平面中的运动速度，常用于跟踪稀疏特征 点（如Lucas-Kanade光流）在视频帧间的移动。"},{"id":369,"category":"计算机视觉","question":"以下哪种文件格式支持图像的透明通道（Alpha通道）？","options":{"A":"JPEG","B":"BMP","C":"PNG","D":"GIF"},"answer":"C","explanation":"PNG格式支持8位或16位的Alpha通道，用于表示透明度；JPEG不 支持透明。"},{"id":370,"category":"计算机视觉","question":"在图像处理流水线中，通常最先进行的操作是：","options":{"A":"边缘检测","B":"噪声去除","C":"几何变换","D":"颜色分割"},"answer":"B","explanation":"为了提高后续处理的准确性，通常首先对图像进行平滑滤波以去除 噪声。"},{"id":371,"category":"计算机视觉","question":"在OpenCV中，用于创建滑动条（Trackbar）的函数是：","options":{"A":"cv2.createButton()","B":"cv2.createTrackbar()","C":"cv2.slider()","D":"cv2.control()"},"answer":"B","explanation":"cv2.createTrackbar()用于在显示窗口中创建一个滑动条，方便实 时调整参数（如阈值、HSV范围）。"},{"id":372,"category":"计算机视觉","question":"以下哪种算子的卷积核是[[1,0,-1],[2,0,-2],[1,0,-1]]？","options":{"A":"SobelX方向","B":"SobelY方向","C":"PrewittX方向","D":"Roberts"},"answer":"A","explanation":"这是Sobel算子在X方向（水平方向）的卷积核，用于检测垂直边 缘。"},{"id":373,"category":"计算机视觉","question":"在形态学操作中，核（Kernel）的大小和形状通常通过哪个函数定义？","options":{"A":"cv2.kernel()","B":"cv2.getStructuringElement()","C":"cv2.createKernel()","D":"np.array()"},"answer":"B","explanation":"cv2.getStructuringElement(cv2.MORPH_RECT,(5,5))用于创建矩 形、椭圆或十字形的结构元素（核）。"},{"id":374,"category":"计算机视觉","question":"以下哪个函数用于进行图像的仿射变换？","options":{"A":"cv2.warpAffine()","B":"cv2.warpPerspective()","C":"cv2.transform()","D":"cv2.affine()"},"answer":"A","explanation":"cv2.warpAffine(img,M,dsize)用于应用仿射变换矩阵M对图像进 行变换。"},{"id":375,"category":"计算机视觉","question":"在特征描述子中，ORB算法结合了哪两种技术？","options":{"A":"SIFT和SURF","B":"FAST和BRIEF","C":"Harris和Sobel","D":"HOG和LBP"},"answer":"B","explanation":"ORB（OrientedFASTandRotatedBRIEF）使用FAST进行关键点检 测，使用改进的BRIEF进行描述，具有旋转不变性。"},{"id":376,"category":"计算机视觉","question":"以下哪种操作可以增加图像的对比度？","options":{"A":"直方图均衡化","B":"高斯模糊","C":"中值滤波","D":"腐蚀"},"answer":"A","explanation":"直方图均衡化通过拉伸灰度级分布来增加图像的对比度。"},{"id":377,"category":"计算机视觉","question":"在OpenCV中，用于获取键盘按键ASCII码的函数是：","options":{"A":"cv2.waitKey()","B":"input()","C":"getkey()","D":"cv2.getKey()"},"answer":"A","explanation":"cv2.waitKey()的返回值即为按键的ASCII码（或键值），可用于控 制程序流程（如按'q'退出）。"},{"id":378,"category":"计算机视觉","question":"以下哪个不是图像分割的方法？","options":{"A":"阈值分割","B":"边缘检测","C":"区域生长","D":"二值化"},"answer":"B","explanation":"边缘检测是特征提取的一种，用于找到物体的边界，而阈值分割、 区域生长和二值化是图像分割的具体方法。"},{"id":379,"category":"计算机视觉","question":"在颜色识别中，为了减少光照强度变化的影响，通常选择哪种颜色空间？","options":{"A":"RGB","B":"HSV","C":"CMYK","D":"Gray"},"answer":"B","explanation":"在HSV空间中，V分量代表亮度，H和S分量代表颜色信息。通过设 定H和S的范围，可以更鲁棒地识别颜色，不受亮度变化的严重影响。"},{"id":380,"category":"计算机视觉","question":"以下哪种变换可以纠正图像的透视畸变？","options":{"A":"仿射变换","B":"透视变换","C":"尺度变换","D":"旋转变换"},"answer":"B","explanation":"透视变换（ProjectiveTransformation）需要4个对应点，可以将 一个四边形变换为另一个四边形，用于纠正透视畸变（如将倾斜的身份证 变正）。"},{"id":381,"category":"计算机视觉","question":"在图像金字塔中，高斯金字塔的每一层是通过对上一层进行什么操作得到 的？","options":{"A":"卷积和下采样","B":"卷积和上采样","C":"仅上采样","D":"仅下采样"},"answer":"A","explanation":"构建高斯金字塔时，通常先对当前层图像进行高斯平滑，然后去除 偶数行和列（下采样）。"},{"id":382,"category":"计算机视觉","question":"在SURF算法中，使用什么算子来近似高斯拉普拉斯算子？","options":{"A":"Sobel","B":"Prewitt","C":"盒子滤波器","D":"Canny"},"answer":"C","explanation":"SURF使用盒子滤波器（BoxFilter）来近似高斯二阶导数，利用积 分图像加速计算。"},{"id":383,"category":"计算机视觉","question":"以下哪个函数用于计算两个图像的绝对差异？","options":{"A":"cv2.absdiff()","B":"cv2.subtract()","C":"cv2.difference()","D":"cv2.minus()"},"answer":"A","explanation":"cv2.absdiff(src1,src2)计算两个图像对应像素差值的绝对值，常 用于运动检测。"},{"id":384,"category":"计算机视觉","question":"在深度学习与OpenCV结合时，cv2.dnn.readNet()用于：","options":{"A":"读取预训练的深度学习模型","B":"训练神经网络","C":"定义网络结构","D":"优化权重"},"answer":"A","explanation":"cv2.dnn模块提供了读取Caffe、TensorFlow、Darknet等框架训练 好的模型，并进行推理的功能。"},{"id":385,"category":"计算机视觉","question":"以下哪种图像格式是无损压缩且支持透明？","options":{"A":"JPEG","B":"PNG","C":"BMP","D":"GIF"},"answer":"B","explanation":"PNG格式支持无损压缩和Alpha透明通道，是网页和图形设计中常用 的格式。"},{"id":386,"category":"计算机视觉","question":"在图像处理中，卷积核的大小通常为奇数，如3x3,5x5，主要原因是：","options":{"A":"为了计算速度快","B":"为了有明确的中心像素","C":"为了节省内存","D":"为了对称"},"answer":"B","explanation":"奇数尺寸的卷积核（如3x3）有一个明确的中心点，便于对齐和定 位。"},{"id":387,"category":"计算机视觉","question":"以下哪个函数用于进行图像的透视变换？","options":{"A":"cv2.warpAffine()","B":"cv2.warpPerspective()","C":"cv2.transform()","D":"cv2.perspective()"},"answer":"B","explanation":"cv2.warpPerspective(img,M,dsize)用于应用3x3的透视变换矩 阵M对图像进行变换。"},{"id":388,"category":"计算机视觉","question":"在特征匹配中，汉明距离（HammingDistance）通常用于比较哪种描述 子？","options":{"A":"浮点型描述子（如SIFT）","B":"二进制描述子（如ORB）","C":"整数型描述子","D":"颜色直方图"},"answer":"B","explanation":"ORB、BRIEF等二进制描述子使用汉明距离（不同位的数量）来衡量 相似度，计算速度极快。"},{"id":389,"category":"计算机视觉","question":"以下哪种操作可以检测图像中的圆形？","options":{"A":"cv2.HoughLines()","B":"cv2.HoughCircles()","C":"cv2.findContours()","D":"B和C"},"answer":"D","explanation":"cv2.HoughCircles()专门用于检测圆；cv2.findContours()结合轮 廓分析（如圆度）也可以检测近似圆形。"},{"id":390,"category":"计算机视觉","question":"在OpenCV中，用于销毁所有创建的窗口的函数是：","options":{"A":"cv2.destroyAllWindows()","B":"cv2.destroyWindow()","C":"cv2.closeAllWindows()","D":"cv2.quit()"},"answer":"A","explanation":"cv2.destroyAllWindows()会关闭所有由OpenCV创建的窗口。"},{"id":391,"category":"计算机视觉","question":"以下哪个不是常见的图像梯度算子？","options":{"A":"Scharr","B":"Sobel","C":"Laplacian","D":"Gaussian"},"answer":"D","explanation":"Scharr、Sobel和Laplacian都是梯度算子，而高斯算子主要用于平 滑（低通滤波）。"},{"id":392,"category":"计算机视觉","question":"在图像二值化中，如果阈值设置得过高，会导致：","options":{"A":"前景物体变大","B":"前景物体变小或消失","C":"图像变亮","D":"图像变暗"},"answer":"B","explanation":"高阈值意味着只有非常亮的像素才会被设为白色（前景），导致前 景物体缩小或断裂。"},{"id":393,"category":"计算机视觉","question":"在颜色空间中，Lab中的L代表：","options":{"A":"绿-红对立","B":"黄-蓝对立","C":"亮度","D":"饱和度"},"answer":"C","explanation":"在CIELab颜色空间中，L表示亮度，a表示从绿到红的颜色对立， b*表示从蓝到黄的颜色对立。"},{"id":394,"category":"计算机视觉","question":"以下哪种滤波器在去除高斯噪声方面效果最好？","options":{"A":"中值滤波","B":"均值滤波","C":"双边滤波","D":"高斯滤波"},"answer":"D","explanation":"高斯滤波器的权重呈高斯分布，对服从高斯分布的噪声有很好的平 滑效果。"},{"id":395,"category":"计算机视觉","question":"在目标检测中，Haar级联分类器主要用于检测：","options":{"A":"任意物体","B":"人脸等特定物体","C":"文本","D":"动物"},"answer":"B","explanation":"Haar级联分类器通过训练可以检测特定物体（如人脸、眼睛、车 辆），但在复杂背景下泛化能力不如深度学习方法。"},{"id":396,"category":"计算机视觉","question":"以下哪个函数用于获取图像的轮廓？","options":{"A":"cv2.findContours()","B":"cv2.drawContours()","C":"cv2.contours()","D":"cv2.getCanny()"},"answer":"A","explanation":"cv2.findContours()用于从二值图像中检索轮廓，返回轮廓列表和 层级信息。"},{"id":397,"category":"计算机视觉","question":"在图像处理中，Gamma校正主要用于：","options":{"A":"调整图像的亮度非线性","B":"锐化图像","C":"去除噪声","D":"改变分辨率"},"answer":"A","explanation":"Gamma校正通过幂律变换调整图像的亮度，用于校正显示设备的非线 性响应或改善视觉效果。"},{"id":398,"category":"计算机视觉","question":"在OpenCV的绘图函数中，线型（lineType）参数不包括：","options":{"A":"cv2.LINE_4","B":"cv2.LINE_8","C":"cv2.LINE_AA","D":"cv2.LINE_CIRCLE"},"answer":"D","explanation":"cv2.LINE_4（4连通）、cv2.LINE_8（8连通）和cv2.LINE_AA（抗 锯齿）是有效的线型，用于控制线条的绘制方式。"},{"id":399,"category":"计算机视觉","question":"以下哪种操作属于非线性空间滤波？","options":{"A":"均值滤波","B":"高斯滤波","C":"中值滤波","D":"方框滤波"},"answer":"C","explanation":"中值滤波的输出值取决于邻域像素的排序，是非线性的；而均值、 高斯、方框滤波都是线性加权和。"},{"id":400,"category":"计算机视觉","question":"在视频分析中，背景减除（BackgroundSubtraction）的主要目的是：","options":{"A":"去除视频中的背景，提取前景运动物体","B":"增强视频亮度","C":"稳定视频画面","D":"压缩视频文件"},"answer":"A","explanation":"背景减除通过建立背景模型，将当前帧与背景模型进行比较，从而 分割出运动的前景物体。"}];
+
+// ============================================================
+// 状态管理 (localStorage)
+// ============================================================
+const STATE_KEY = 'quiz_progress';
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STATE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return {
+    answered: {},
+    wrongIds: [],
+    daily: {},
+    streak: 0,
+    lastQuizDate: ''
+  };
+}
+
+function saveState(s) {
+  try {
+    localStorage.setItem(STATE_KEY, JSON.stringify(s));
+  } catch(e) {
+    // QuotaExceeded or private browsing — silently continue with in-memory state
+    console.warn('Failed to save progress:', e.message);
+  }
+}
+
+let state = loadState();
+let currentQuestion = null;
+let currentFilter = '全部';
+let answeredInSession = false;
+let redoingWrong = false;
+
+const CATEGORIES = ['全部', 'Python基础', '机器学习', '深度学习', '计算机视觉'];
+
+// ============================================================
+// 智能选题算法
+// ============================================================
+function pickNextQuestion() {
+  // 重做错题模式: 只从错题中选
+  if (redoingWrong) {
+    if (state.wrongIds.length === 0) {
+      redoingWrong = false;
+      return null; // 所有错题已完成
+    }
+    const pool = ALL_QUESTIONS.filter(q => state.wrongIds.includes(q.id));
+    if (pool.length === 0) return null;
+    const idx = Math.floor(Math.random() * pool.length);
+    let selected = pool[idx];
+    // 连续去重: 避免连续出现同一题
+    if (selected.id === (currentQuestion && currentQuestion.id) && pool.length > 1) {
+      const others = pool.filter(q => q.id !== selected.id);
+      selected = others[Math.floor(Math.random() * others.length)];
+    }
+    return selected;
+  }
+
+  const pool = currentFilter === '全部'
+    ? ALL_QUESTIONS
+    : ALL_QUESTIONS.filter(q => q.category === currentFilter);
+
+  if (pool.length === 0) {
+    // 如果筛选后没有题目，回退到全部
+    return ALL_QUESTIONS[Math.floor(Math.random() * ALL_QUESTIONS.length)];
+  }
+
+  let selected = null;
+
+  // 1. 优先未做过的题
+  const unanswered = pool.filter(q => !(q.id in state.answered));
+  if (unanswered.length > 0) {
+    const idx = Math.floor(Math.random() * unanswered.length);
+    selected = unanswered[idx];
+  } else {
+    // 2. 混合: 70% 错题, 30% 做对的题
+    const wrongInPool = pool.filter(q => state.wrongIds.includes(q.id));
+    const correctInPool = pool.filter(q =>
+      state.answered[q.id] === 'correct' && !state.wrongIds.includes(q.id)
+    );
+
+    if (wrongInPool.length > 0 && Math.random() < 0.7) {
+      const idx = Math.floor(Math.random() * wrongInPool.length);
+      selected = wrongInPool[idx];
+    } else if (correctInPool.length > 0) {
+      const idx = Math.floor(Math.random() * correctInPool.length);
+      selected = correctInPool[idx];
+    } else {
+      const idx = Math.floor(Math.random() * pool.length);
+      selected = pool[idx];
+    }
+  }
+
+  // 连续去重: 避免连续出现同一题 (最多尝试5次)
+  for (let attempt = 0; attempt < 5 && selected && currentQuestion && selected.id === currentQuestion.id && pool.length > 1; attempt++) {
+    const others = pool.filter(q => q.id !== selected.id);
+    if (others.length > 0) {
+      selected = others[Math.floor(Math.random() * others.length)];
+    }
+  }
+
+  return selected;
+}
+
+// ============================================================
+// 渲染题目
+// ============================================================
+function renderQuestion(q) {
+  currentQuestion = q;
+  answeredInSession = false;
+
+  document.getElementById('quiz-category').textContent = q.category;
+
+  // 进度文本和进度条
+  const totalInFilter = currentFilter === '全部'
+    ? ALL_QUESTIONS.length
+    : ALL_QUESTIONS.filter(x => x.category === currentFilter).length;
+  const idx = currentFilter === '全部'
+    ? ALL_QUESTIONS.findIndex(x => x.id === q.id) + 1
+    : ALL_QUESTIONS.filter(x => x.category === currentFilter).findIndex(x => x.id === q.id) + 1;
+  document.getElementById('quiz-progress-text').textContent = idx + '/' + totalInFilter;
+  document.getElementById('quiz-progress-bar').style.width = ((idx / totalInFilter) * 100) + '%';
+
+  document.getElementById('quiz-question').textContent = q.question;
+
+  // 渲染选项按钮
+  const optsDiv = document.getElementById('quiz-options');
+  optsDiv.innerHTML = '';
+  ['A', 'B', 'C', 'D'].forEach(letter => {
+    const btn = document.createElement('div');
+    btn.className = 'quiz-option';
+    btn.textContent = letter + '. ' + q.options[letter];
+    btn.addEventListener('click', () => onAnswer(letter));
+    optsDiv.appendChild(btn);
+  });
+
+  // 重置结果区域
+  const resultDiv = document.getElementById('quiz-result');
+  resultDiv.className = '';
+  resultDiv.style.display = 'none';
+  resultDiv.innerHTML = '';
+
+  const nextBtn = document.getElementById('quiz-next-btn');
+  nextBtn.style.display = 'none';
+}
+
+// ============================================================
+// 答题处理
+// ============================================================
+function onAnswer(letter) {
+  if (answeredInSession) return;
+  answeredInSession = true;
+
+  const q = currentQuestion;
+  const isCorrect = letter === q.answer;
+
+  // 高亮选项
+  const btns = document.querySelectorAll('#quiz-options .quiz-option');
+  btns.forEach(btn => {
+    btn.classList.add('disabled');
+    const btnLetter = btn.textContent.trim().charAt(0);
+    if (btnLetter === q.answer) {
+      btn.classList.add('correct');
+    } else if (btnLetter === letter && !isCorrect) {
+      btn.classList.add('wrong');
+    } else {
+      btn.classList.add('dimmed');
+    }
+  });
+
+  // 内联结果
+  const resultDiv = document.getElementById('quiz-result');
+  resultDiv.style.display = 'block';
+  if (isCorrect) {
+    resultDiv.className = 'show correct-result';
+    resultDiv.innerHTML = '<b>✓ 回答正确！</b><br><span style="color:#666;">' + q.explanation + '</span>';
+    state.answered[q.id] = 'correct';
+    // 重做模式: 答对则从错题中移除
+    if (redoingWrong) {
+      state.wrongIds = state.wrongIds.filter(id => id !== q.id);
+    }
+  } else {
+    resultDiv.className = 'show wrong-result';
+    resultDiv.innerHTML = '<b>✗ 回答错误</b><br><span style="color:#666;">' + q.explanation + '</span><br><span style="color:var(--wrong);">已加入错题薄</span>';
+    state.answered[q.id] = 'wrong';
+    if (!state.wrongIds.includes(q.id)) {
+      state.wrongIds.push(q.id);
+    }
+  }
+
+  // 更新每日统计
+  const today = new Date().toISOString().slice(0, 10);
+  state.daily[today] = (state.daily[today] || 0) + 1;
+  state.lastQuizDate = today;
+
+  saveState(state);
+  document.getElementById('quiz-next-btn').style.display = 'block';
+
+  // 更新首页数据
+  updateHomeStats();
+}
+
+function nextQuestion() {
+  const q = pickNextQuestion();
+  if (q) {
+    renderQuestion(q);
+  } else if (redoingWrong) {
+    redoingWrong = false;
+    alert('全部错题已完成! 继续加油!');
+    switchView('wrong');
+  } else {
+    renderQuestion(ALL_QUESTIONS[Math.floor(Math.random() * ALL_QUESTIONS.length)]);
+  }
+}
+
+// ============================================================
+// 首页统计更新
+// ============================================================
+function updateHomeStats() {
+  const totalDone = Object.keys(state.answered).length;
+  const correctCount = Object.values(state.answered).filter(v => v === 'correct').length;
+  const wrongCount = state.wrongIds.length;
+  const pct = totalDone > 0 ? Math.round((correctCount / totalDone) * 100) : 0;
+
+  document.getElementById('home-pct').textContent = pct + '%';
+  document.getElementById('home-progress-bar').style.width = pct + '%';
+  document.getElementById('home-progress-detail').textContent = '已完成 ' + totalDone + '/' + ALL_QUESTIONS.length + ' 题';
+  document.getElementById('home-correct').textContent = pct + '%';
+  document.getElementById('home-wrong').textContent = wrongCount;
+  document.getElementById('home-total').textContent = totalDone;
+}
+
+// ============================================================
+// 分类筛选弹窗
+// ============================================================
+function openCategoryModal() {
+  const modalOptions = document.getElementById('modal-options');
+  modalOptions.innerHTML = '';
+  CATEGORIES.forEach(cat => {
+    const div = document.createElement('div');
+    div.className = 'modal-option' + (cat === currentFilter ? ' selected' : '');
+    div.textContent = cat;
+    div.addEventListener('click', () => {
+      redoingWrong = false;
+      currentFilter = cat;
+      document.getElementById('category-modal').classList.remove('show');
+      // 渲染新题目
+      const q = pickNextQuestion();
+      if (q) renderQuestion(q);
+    });
+    modalOptions.appendChild(div);
+  });
+  document.getElementById('category-modal').classList.add('show');
+}
+
+// ============================================================
+// 统计视图渲染
+// ============================================================
+function updateStatsView() {
+  const totalDone = Object.keys(state.answered).length;
+  const correctCount = Object.values(state.answered).filter(v => v === 'correct').length;
+  const pct = totalDone > 0 ? Math.round((correctCount / totalDone) * 100) : 0;
+
+  document.getElementById('stats-total').textContent = totalDone;
+  document.getElementById('stats-correct').textContent = correctCount;
+  document.getElementById('stats-pct').textContent = pct + '%';
+
+  // 每分类统计
+  const perCatDiv = document.getElementById('stats-per-category');
+  perCatDiv.innerHTML = '';
+  const cats = ['Python基础', '机器学习', '深度学习', '计算机视觉'];
+  cats.forEach(cat => {
+    const catQuestions = ALL_QUESTIONS.filter(q => q.category === cat);
+    const catTotal = catQuestions.length;
+    const catDone = catQuestions.filter(q => q.id in state.answered).length;
+    const catCorrect = catQuestions.filter(q => state.answered[q.id] === 'correct').length;
+    const catPct = catDone > 0 ? Math.round((catCorrect / catDone) * 100) : 0;
+
+    const div = document.createElement('div');
+    div.className = 'category-stat';
+    div.innerHTML =
+      '<div class="category-stat-header">' +
+        '<span class="category-stat-name">' + cat + '</span>' +
+        '<span class="category-stat-count">' + catDone + '/' + catTotal + ' (' + catPct + '%)</span>' +
+      '</div>' +
+      '<div class="progress-bar">' +
+        '<div class="progress-fill" style="width:' + catPct + '%;"></div>' +
+      '</div>';
+    perCatDiv.appendChild(div);
+  });
+}
+
+// ============================================================
+// 错题视图渲染
+// ============================================================
+function updateWrongView() {
+  const wrongList = document.getElementById('wrong-list');
+  const wrongCountEl = document.getElementById('wrong-count');
+  wrongList.innerHTML = '';
+
+  if (state.wrongIds.length === 0) {
+    wrongCountEl.textContent = '还没有错题，继续加油！';
+    document.getElementById('redo-all-btn').style.display = 'none';
+    return;
+  }
+
+  wrongCountEl.textContent = '共 ' + state.wrongIds.length + ' 道错题';
+  document.getElementById('redo-all-btn').style.display = 'block';
+
+  state.wrongIds.forEach(wid => {
+    const q = ALL_QUESTIONS.find(q => q.id === wid);
+    if (!q) return;
+
+    const correctAnswerText = q.options[q.answer];
+
+    const item = document.createElement('div');
+    item.className = 'wrong-item';
+    item.innerHTML =
+      '<div class="wrong-item-header">' +
+        '<span style="font-size:12px;color:var(--text-secondary);">' + q.category + '</span>' +
+      '</div>' +
+      '<div class="wrong-item-question">' + q.question + '</div>' +
+      '<div class="wrong-item-answers">' +
+        '<span class="correct">答案：' + q.answer + '. ' + correctAnswerText + '</span>' +
+      '</div>' +
+      '<button class="wrong-item-remove" data-id="' + wid + '">✕</button>';
+
+    wrongList.appendChild(item);
+  });
+
+  // 删除单条错题
+  document.querySelectorAll('.wrong-item-remove').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const wid = parseInt(btn.dataset.id);
+      state.wrongIds = state.wrongIds.filter(id => id !== wid);
+      saveState(state);
+      updateWrongView();
+      updateHomeStats();
+    });
+  });
+}
+
+// ============================================================
+// 视图切换
+// ============================================================
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const viewName = item.dataset.view;
+    switchView(viewName);
+  });
+});
+
+function switchView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const view = document.getElementById('view-' + name);
+  if (view) view.classList.add('active');
+  const navItem = document.querySelector('.nav-item[data-view="' + name + '"]');
+  if (navItem) navItem.classList.add('active');
+
+  // 切换到刷题视图时，自动初始化题目
+  if (name === 'quiz' && !currentQuestion) {
+    const q = pickNextQuestion();
+    if (q) renderQuestion(q);
+  }
+
+  // 切换到首页时更新统计
+  if (name === 'home') {
+    updateHomeStats();
+  }
+
+  // 切换到统计视图时更新统计详情
+  if (name === 'stats') {
+    updateStatsView();
+  }
+
+  // 切换到错题视图时更新错题列表
+  if (name === 'wrong') {
+    updateWrongView();
+  }
+}
+
+// ============================================================
+// 事件绑定
+// ============================================================
+
+// 分类标签点击 → 打开分类弹窗
+document.getElementById('quiz-category').addEventListener('click', () => {
+  openCategoryModal();
+});
+
+// 下一题按钮
+document.getElementById('quiz-next-btn').addEventListener('click', () => {
+  nextQuestion();
+});
+
+// 首页"开始刷题"卡片
+const startCards = document.querySelectorAll('.quick-card');
+if (startCards.length >= 1) {
+  startCards[0].addEventListener('click', () => {
+    redoingWrong = false;
+    switchView('quiz');
+    if (!currentQuestion) {
+      const q = pickNextQuestion();
+      if (q) renderQuestion(q);
+    }
+  });
+}
+
+// 首页"选择题库分类"按钮
+document.getElementById('home-select-category').addEventListener('click', () => {
+  openCategoryModal();
+});
+
+// 清空错题
+document.getElementById('clear-all-btn').addEventListener('click', () => {
+  if (confirm('确定要清空所有错题吗？此操作不可恢复。')) {
+    state.wrongIds = [];
+    saveState(state);
+    updateWrongView();
+    updateHomeStats();
+  }
+});
+
+// 重做全部错题
+document.getElementById('redo-all-btn').addEventListener('click', () => {
+  if (state.wrongIds.length === 0) return;
+  redoingWrong = true;
+  currentFilter = '全部';
+  const q = pickNextQuestion();
+  if (q) {
+    renderQuestion(q);
+    switchView('quiz');
+  } else {
+    redoingWrong = false;
+    alert('没有错题可做!');
+  }
+});
+
+// 弹窗关闭
+document.getElementById('modal-close-btn').addEventListener('click', () => {
+  document.getElementById('category-modal').classList.remove('show');
+});
+
+document.getElementById('category-modal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) {
+    e.currentTarget.classList.remove('show');
+  }
+});
+
+// ============================================================
+// 初始化
+// ============================================================
+updateHomeStats();
+</script>
+</body>
+</html>

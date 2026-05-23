@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>具身智能刷题</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 /* =============================================
    1. CSS Reset + Variables
@@ -11,18 +14,28 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --primary: #1976d2;
-  --primary-light: #e3f2fd;
-  --correct: #2e7d32;
-  --correct-light: #e8f5e9;
-  --wrong: #e53935;
-  --wrong-light: #ffebee;
-  --wrong-emphasis: #e65100;
-  --bg: #f5f5f5;
-  --card: #ffffff;
-  --text: #333333;
-  --text-secondary: #888888;
-  --border: #e0e0e0;
+  --primary: #4F46E5;
+  --primary-light: #EEF2FF;
+  --primary-dark: #3730A3;
+  --secondary: #818CF8;
+  --correct: #059669;
+  --correct-light: #ECFDF5;
+  --wrong: #EF4444;
+  --wrong-light: #FEF2F2;
+  --wrong-emphasis: #F97316;
+  --bg: #F5F3FF;
+  --card: #FFFFFF;
+  --text: #312E81;
+  --text-secondary: #6B7280;
+  --border: #E0E7FF;
+  --shadow-sm: 0 1px 2px rgba(79,70,229,0.06), 0 1px 3px rgba(79,70,229,0.1);
+  --shadow-md: 0 4px 6px rgba(79,70,229,0.05), 0 2px 4px rgba(79,70,229,0.08);
+  --shadow-lg: 0 10px 15px rgba(79,70,229,0.06), 0 4px 6px rgba(79,70,229,0.1);
+  --shadow-inner: inset 0 2px 4px rgba(79,70,229,0.06);
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
@@ -34,7 +47,7 @@ html, body {
 }
 
 body {
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  font-family: 'Baloo 2', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
   background-color: var(--bg);
   color: var(--text);
   -webkit-tap-highlight-color: transparent;
@@ -42,6 +55,7 @@ body {
   user-select: none;
   display: flex;
   justify-content: center;
+  overscroll-behavior: contain;
 }
 
 #app {
@@ -81,7 +95,7 @@ body {
   border-top: 1px solid var(--border);
   padding: 8px 0 calc(8px + var(--safe-bottom));
   z-index: 50;
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 -4px 20px rgba(79,70,229,0.08);
 }
 
 .nav-item {
@@ -168,17 +182,23 @@ body {
 .quiz-option {
   padding: 16px;
   min-height: 48px;
-  border: 2px solid var(--border);
-  border-radius: 12px;
+  border: 2.5px solid var(--border);
+  border-radius: var(--radius-md);
   font-size: 16px;
   background-color: var(--card);
   cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+  transition: all 0.2s ease;
   text-align: left;
   width: 100%;
   display: flex;
   align-items: center;
   color: var(--text);
+  box-shadow: var(--shadow-sm);
+}
+
+.quiz-option:active {
+  transform: scale(0.97);
+  box-shadow: var(--shadow-inner);
 }
 
 .quiz-option:active {
@@ -234,6 +254,15 @@ body {
   color: var(--wrong);
 }
 
+.exam-result {
+  padding: 20px;
+  background-color: var(--card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  overflow-y: auto;
+  max-height: 60vh;
+}
+
 /* =============================================
    8. Buttons
    ============================================= */
@@ -242,20 +271,20 @@ body {
   width: 100%;
   padding: 16px;
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 700;
   min-height: 48px;
   background-color: var(--primary);
   color: #ffffff;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  margin-top: 16px;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  box-shadow: 0 4px 14px rgba(79,70,229,0.3);
+  transition: all 0.2s ease;
 }
 
 .btn-primary:active {
-  transform: scale(0.98);
-  background-color: #1565c0;
+  transform: scale(0.97);
+  box-shadow: 0 2px 6px rgba(79,70,229,0.2);
 }
 
 .btn-outline-primary {
@@ -375,10 +404,16 @@ body {
   align-items: center;
   justify-content: center;
   background-color: var(--card);
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   padding: 14px 8px;
   cursor: pointer;
-  transition: transform 0.1s ease, box-shadow 0.2s ease;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.stat-card:active {
+  transform: scale(0.97);
+  box-shadow: var(--shadow-inner);
 }
 
 .stat-card:active {
@@ -1061,7 +1096,8 @@ function finishExam() {
   examMode = false;
   const total = examQuestions.length;
   const correctCount = examQuestions.filter(q => state.answered[q.id] === 'correct').length;
-  const pct = Math.round((correctCount / total) * 100);
+  const wrongQuestions = examQuestions.filter(q => state.answered[q.id] === 'wrong');
+  const score = correctCount; // 每题1分，满分=total
 
   document.getElementById('quiz-category').textContent = '考试结束';
   document.getElementById('quiz-progress-text').textContent = total + '/' + total;
@@ -1072,14 +1108,34 @@ function finishExam() {
 
   const resultDiv = document.getElementById('quiz-result');
   resultDiv.style.display = 'block';
-  resultDiv.className = 'show';
+  resultDiv.className = 'exam-result';
+
+  let wrongHTML = '';
+  if (wrongQuestions.length > 0) {
+    wrongHTML = `
+      <div style="text-align:left;margin-top:16px;">
+        <h3 style="font-size:16px;margin-bottom:8px;">错题解析 (${wrongQuestions.length}题)</h3>
+        ${wrongQuestions.map(q => `
+          <div style="background:#fff;border:1px solid #eee;border-radius:12px;padding:12px;margin-bottom:8px;text-align:left;">
+            <p style="font-size:13px;color:var(--text-secondary);margin:0 0 4px 0;">${q.category} · 第${q.id}题</p>
+            <p style="font-size:14px;margin:0 0 8px 0;">${q.question}</p>
+            <p style="font-size:12px;margin:0;color:var(--wrong);">你的答案：${q.options[Object.keys(state.answered).find(k => state.answered[parseInt(k)] === 'wrong' && parseInt(k) === q.id) ? '' : ''] || '未知'}</p>
+            <p style="font-size:12px;margin:2px 0;color:var(--correct);">正确答案：${q.answer}. ${q.options[q.answer]}</p>
+            <p style="font-size:12px;margin:4px 0 0 0;color:var(--text-secondary);">${q.explanation}</p>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
   resultDiv.innerHTML = `
     <div style="text-align:center;">
-      <p style="font-size:48px;margin:8px 0;">${pct >= 60 ? '🎉' : '💪'}</p>
-      <p style="font-size:24px;font-weight:700;">正确率 ${pct}%</p>
-      <p style="color:var(--text-secondary);">答对 ${correctCount}/${total} 题</p>
-      <button class="btn-primary" onclick="switchView('home');updateHomeStats();" style="margin-top:12px;">返回首页</button>
-      <button class="btn-outline-primary" onclick="switchView('wrong');" style="margin-top:8px;width:100%;">查看错题薄</button>
+      <div style="font-size:64px;margin:8px 0;">${score >= 80 ? '🏆' : score >= 60 ? '🎉' : '💪'}</div>
+      <p style="font-size:32px;font-weight:700;color:var(--primary);margin:0;">${score}/${total} 分</p>
+      <p style="color:var(--text-secondary);margin:4px 0 0 0;">答对 ${correctCount} 题 · 正确率 ${Math.round((correctCount / total) * 100)}%</p>
+      <button class="btn-primary" onclick="switchView('home');updateHomeStats();" style="margin-top:16px;">返回首页</button>
+      ${wrongQuestions.length > 0 ? '<button class="btn-outline-primary" onclick="switchView(\'wrong\');" style="margin-top:8px;width:100%;">查看错题薄</button>' : ''}
+      ${wrongHTML}
     </div>
   `;
 
@@ -1341,14 +1397,14 @@ if (startCards.length >= 2) {
   startCards[1].addEventListener('click', () => {
     redoingWrong = false;
     examMode = true;
-    // Randomly pick 20 questions from the active filter
+    // Randomly pick 100 questions from the active filter
     const hasFilter = currentFilters.length > 0;
     const pool = hasFilter
       ? ALL_QUESTIONS.filter(q => currentFilters.includes(q.category))
       : ALL_QUESTIONS;
-    // Shuffle and pick 20
+    // Shuffle and pick 100
     const shuffled = [...pool].sort(() => Math.random() - 0.5);
-    examQuestions = shuffled.slice(0, Math.min(20, shuffled.length));
+    examQuestions = shuffled.slice(0, Math.min(100, shuffled.length));
     examIndex = 0;
     currentQuestion = null;
     switchView('quiz');

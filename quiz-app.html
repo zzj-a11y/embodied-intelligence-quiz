@@ -760,6 +760,7 @@ body {
     <div id="stats-per-category">
       <p style="text-align:center;padding:20px;color:var(--text-secondary);">统计加载中...</p>
     </div>
+    <button id="clear-progress-btn" class="btn-outline-danger" style="width:100%;margin-top:16px;">清除所有进度</button>
   </div>
 
   <!-- =========================================
@@ -1152,12 +1153,13 @@ function updateHomeStats() {
   const totalDone = Object.keys(state.answered).length;
   const correctCount = Object.values(state.answered).filter(v => v === 'correct').length;
   const wrongCount = state.wrongIds.length;
-  const pct = totalDone > 0 ? Math.round((correctCount / totalDone) * 100) : 0;
+  const accuracy = totalDone > 0 ? Math.round((correctCount / totalDone) * 100) : 0;
+  const progress = Math.round((totalDone / ALL_QUESTIONS.length) * 100);
 
-  document.getElementById('home-pct').textContent = pct + '%';
-  document.getElementById('home-progress-bar').style.width = pct + '%';
+  document.getElementById('home-pct').textContent = accuracy + '%';
+  document.getElementById('home-progress-bar').style.width = progress + '%';
   document.getElementById('home-progress-detail').textContent = '已完成 ' + totalDone + '/' + ALL_QUESTIONS.length + ' 题';
-  document.getElementById('home-correct').textContent = pct + '%';
+  document.getElementById('home-correct').textContent = accuracy + '%';
   document.getElementById('home-wrong').textContent = wrongCount;
   document.getElementById('home-total').textContent = totalDone;
 }
@@ -1259,6 +1261,7 @@ function updateStatsView() {
     const catDone = catQuestions.filter(q => q.id in state.answered).length;
     const catCorrect = catQuestions.filter(q => state.answered[q.id] === 'correct').length;
     const catPct = catDone > 0 ? Math.round((catCorrect / catDone) * 100) : 0;
+    const catProgress = catTotal > 0 ? Math.round((catDone / catTotal) * 100) : 0;
 
     const div = document.createElement('div');
     div.className = 'category-stat';
@@ -1268,7 +1271,7 @@ function updateStatsView() {
         '<span class="category-stat-count">' + catDone + '/' + catTotal + ' (' + catPct + '%)</span>' +
       '</div>' +
       '<div class="progress-bar">' +
-        '<div class="progress-fill" style="width:' + catPct + '%;"></div>' +
+        '<div class="progress-fill" style="width:' + catProgress + '%;"></div>' +
       '</div>';
     perCatDiv.appendChild(div);
   });
@@ -1416,6 +1419,22 @@ if (startCards.length >= 2) {
 // 首页"选择题库分类"按钮
 document.getElementById('home-select-category').addEventListener('click', () => {
   openCategoryModal();
+});
+
+// 清除所有进度
+document.getElementById('clear-progress-btn').addEventListener('click', () => {
+  if (confirm('确定要清除所有刷题进度？\n包括已答题记录、错题薄、每日统计。此操作不可恢复。')) {
+    state.answered = {};
+    state.wrongIds = [];
+    state.daily = {};
+    state.streak = 0;
+    state.lastQuizDate = '';
+    saveState(state);
+    currentQuestion = null;
+    updateHomeStats();
+    updateStatsView();
+    updateWrongView();
+  }
 });
 
 // 清空错题

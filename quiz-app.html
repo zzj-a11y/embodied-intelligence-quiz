@@ -812,9 +812,12 @@ function saveState(s) {
 
 let state = loadState();
 let currentQuestion = null;
-let currentFilter = '全部';
+let currentFilters = [];  // empty = all categories selected
 let answeredInSession = false;
 let redoingWrong = false;
+let examMode = false;
+let examQuestions = [];
+let examIndex = 0;
 
 const CATEGORIES = ['全部', 'Python基础', '机器学习', '深度学习', '计算机视觉'];
 
@@ -822,17 +825,21 @@ const CATEGORIES = ['全部', 'Python基础', '机器学习', '深度学习', '�
 // 智能选题算法
 // ============================================================
 function pickNextQuestion() {
+  // 考试模式: 按顺序出题
+  if (examMode) {
+    if (examIndex >= examQuestions.length) return null;
+    return examQuestions[examIndex];
+  }
+
   // 重做错题模式: 只从错题中选
   if (redoingWrong) {
     if (state.wrongIds.length === 0) {
-      redoingWrong = false;
-      return null; // 所有错题已完成
+      return null; // 所有错题已完成 (caller resets flag)
     }
     const pool = ALL_QUESTIONS.filter(q => state.wrongIds.includes(q.id));
     if (pool.length === 0) return null;
     const idx = Math.floor(Math.random() * pool.length);
     let selected = pool[idx];
-    // 连续去重: 避免连续出现同一题
     if (selected.id === (currentQuestion && currentQuestion.id) && pool.length > 1) {
       const others = pool.filter(q => q.id !== selected.id);
       selected = others[Math.floor(Math.random() * others.length)];
@@ -840,12 +847,12 @@ function pickNextQuestion() {
     return selected;
   }
 
-  const pool = currentFilter === '全部'
-    ? ALL_QUESTIONS
-    : ALL_QUESTIONS.filter(q => q.category === currentFilter);
+  const hasFilter = currentFilters.length > 0;
+  const pool = hasFilter
+    ? ALL_QUESTIONS.filter(q => currentFilters.includes(q.category))
+    : ALL_QUESTIONS;
 
   if (pool.length === 0) {
-    // 如果筛选后没有题目，回退到全部
     return ALL_QUESTIONS[Math.floor(Math.random() * ALL_QUESTIONS.length)];
   }
 
@@ -875,7 +882,7 @@ function pickNextQuestion() {
     }
   }
 
-  // 连续去重: 避免连续出现同一题 (最多尝试5次)
+  // 连续去重
   for (let attempt = 0; attempt < 5 && selected && currentQuestion && selected.id === currentQuestion.id && pool.length > 1; attempt++) {
     const others = pool.filter(q => q.id !== selected.id);
     if (others.length > 0) {
@@ -893,15 +900,26 @@ function renderQuestion(q) {
   currentQuestion = q;
   answeredInSession = false;
 
-  document.getElementById('quiz-category').textContent = q.category;
+  // 分类标签
+  const catLabel = examMode ? '考试模式'
+    : redoingWrong ? '错题重做'
+    : (currentFilters.length > 0 ? currentFilters.join('+') : q.category);
+  document.getElementById('quiz-category').textContent = catLabel;
 
   // 进度文本和进度条
-  const totalInFilter = currentFilter === '全部'
-    ? ALL_QUESTIONS.length
-    : ALL_QUESTIONS.filter(x => x.category === currentFilter).length;
-  const idx = currentFilter === '全部'
-    ? ALL_QUESTIONS.findIndex(x => x.id === q.id) + 1
-    : ALL_QUESTIONS.filter(x => x.category === currentFilter).findIndex(x => x.id === q.id) + 1;
+  const hasFilter = currentFilters.length > 0;
+  let totalInFilter, idx;
+  if (examMode) {
+    totalInFilter = examQuestions.length;
+    idx = examIndex + 1;
+  } else if (hasFilter) {
+    const filteredPool = ALL_QUESTIONS.filter(x => currentFilters.includes(x.category));
+    totalInFilter = filteredPool.length;
+    idx = filteredPool.findIndex(x => x.id === q.id) + 1;
+  } else {
+    totalInFilter = ALL_QUESTIONS.length;
+    idx = ALL_QUESTIONS.findIndex(x => x.id === q.id) + 1;
+  }
   document.getElementById('quiz-progress-text').textContent = idx + '/' + totalInFilter;
   document.getElementById('quiz-progress-bar').style.width = ((idx / totalInFilter) * 100) + '%';
 
@@ -952,7 +970,28 @@ function onAnswer(letter) {
     }
   });
 
-  // 内联结果
+  // 考试模式: 只记录答案，不显示解析
+  if (examMode) {
+    const resultDiv = document.getElementById('quiz-result');
+    resultDiv.style.display = 'block';
+    resultDiv.className = 'show';  // neutral, no correct/wrong coloring
+    resultDiv.innerHTML = '<b>已记录答案</b>';
+    state.answered[q.id] = isCorrect ? 'correct' : 'wrong';
+    if (!isCorrect && !state.wrongIds.includes(q.id)) {
+      state.wrongIds.push(q.id);
+    }
+    // 更新每日统计
+    const today = new Date().toISOString().slice(0, 10);
+    state.daily[today] = (state.daily[today] || 0) + 1;
+    state.lastQuizDate = today;
+    saveState(state);
+    document.getElementById('quiz-next-btn').style.display = 'block';
+    document.getElementById('quiz-next-btn').textContent = examIndex >= examQuestions.length - 1 ? '查看成绩 →' : '下一题 →';
+    updateHomeStats();
+    return;
+  }
+
+  // 练习模式: 显示解析
   const resultDiv = document.getElementById('quiz-result');
   resultDiv.style.display = 'block';
   if (isCorrect) {
@@ -986,15 +1025,68 @@ function onAnswer(letter) {
 
 function nextQuestion() {
   const q = pickNextQuestion();
+
   if (q) {
+    if (examMode) {
+      examIndex++;
+      document.getElementById('quiz-progress-text').textContent = (examIndex + 1) + '/' + examQuestions.length;
+      document.getElementById('quiz-progress-bar').style.width = ((examIndex + 1) / examQuestions.length * 100) + '%';
+    }
     renderQuestion(q);
-  } else if (redoingWrong) {
+    return;
+  }
+
+  // No more questions — check what mode we're in
+  if (examMode) {
+    // Exam finished — show score
+    finishExam();
+    return;
+  }
+
+  if (redoingWrong) {
     redoingWrong = false;
     alert('全部错题已完成! 继续加油!');
     switchView('wrong');
-  } else {
-    renderQuestion(ALL_QUESTIONS[Math.floor(Math.random() * ALL_QUESTIONS.length)]);
+    return;
   }
+
+  // Fallback (shouldn't normally reach here)
+  renderQuestion(ALL_QUESTIONS[Math.floor(Math.random() * ALL_QUESTIONS.length)]);
+}
+
+// ============================================================
+// 考试模式 — 结束考试，显示成绩
+// ============================================================
+function finishExam() {
+  examMode = false;
+  const total = examQuestions.length;
+  const correctCount = examQuestions.filter(q => state.answered[q.id] === 'correct').length;
+  const pct = Math.round((correctCount / total) * 100);
+
+  document.getElementById('quiz-category').textContent = '考试结束';
+  document.getElementById('quiz-progress-text').textContent = total + '/' + total;
+  document.getElementById('quiz-progress-bar').style.width = '100%';
+  document.getElementById('quiz-question').textContent = '考试完成！';
+  document.getElementById('quiz-options').innerHTML = '';
+  document.getElementById('quiz-next-btn').style.display = 'none';
+
+  const resultDiv = document.getElementById('quiz-result');
+  resultDiv.style.display = 'block';
+  resultDiv.className = 'show';
+  resultDiv.innerHTML = `
+    <div style="text-align:center;">
+      <p style="font-size:48px;margin:8px 0;">${pct >= 60 ? '🎉' : '💪'}</p>
+      <p style="font-size:24px;font-weight:700;">正确率 ${pct}%</p>
+      <p style="color:var(--text-secondary);">答对 ${correctCount}/${total} 题</p>
+      <button class="btn-primary" onclick="switchView('home');updateHomeStats();" style="margin-top:12px;">返回首页</button>
+      <button class="btn-outline-primary" onclick="switchView('wrong');" style="margin-top:8px;width:100%;">查看错题薄</button>
+    </div>
+  `;
+
+  examQuestions = [];
+  examIndex = 0;
+  currentQuestion = null;
+  saveState(state);
 }
 
 // ============================================================
@@ -1020,21 +1112,73 @@ function updateHomeStats() {
 function openCategoryModal() {
   const modalOptions = document.getElementById('modal-options');
   modalOptions.innerHTML = '';
-  CATEGORIES.forEach(cat => {
+
+  // "全选" quick toggle
+  const allBtn = document.createElement('div');
+  allBtn.className = 'modal-option' + (currentFilters.length === 0 ? ' selected' : '');
+  allBtn.textContent = '全部';
+  allBtn.style.fontWeight = '600';
+  allBtn.addEventListener('click', () => {
+    redoingWrong = false; examMode = false;
+    currentFilters = [];
+    document.getElementById('category-modal').classList.remove('show');
+    const q = pickNextQuestion();
+    if (q) renderQuestion(q);
+  });
+  modalOptions.appendChild(allBtn);
+
+  CATEGORIES.filter(c => c !== '全部').forEach(cat => {
+    const isSelected = currentFilters.includes(cat);
     const div = document.createElement('div');
-    div.className = 'modal-option' + (cat === currentFilter ? ' selected' : '');
-    div.textContent = cat;
+    div.className = 'modal-option' + (isSelected ? ' selected' : '');
+    div.textContent = (isSelected ? '☑ ' : '☐ ') + cat;
     div.addEventListener('click', () => {
-      redoingWrong = false;
-      currentFilter = cat;
-      document.getElementById('category-modal').classList.remove('show');
-      // 渲染新题目
-      const q = pickNextQuestion();
-      if (q) renderQuestion(q);
+      redoingWrong = false; examMode = false;
+      // Toggle this category
+      if (currentFilters.includes(cat)) {
+        currentFilters = currentFilters.filter(f => f !== cat);
+      } else {
+        currentFilters = [...currentFilters, cat];
+      }
+      // Refresh modal display
+      refreshCategoryModal();
     });
     modalOptions.appendChild(div);
   });
+
+  // Confirm button
+  const confirmBtn = document.createElement('button');
+  confirmBtn.className = 'btn-primary';
+  confirmBtn.textContent = '确认选择';
+  confirmBtn.style.marginTop = '12px';
+  confirmBtn.addEventListener('click', () => {
+    document.getElementById('category-modal').classList.remove('show');
+    if (currentFilters.length === CATEGORIES.length - 1) currentFilters = []; // all selected = 全部
+    const q = pickNextQuestion();
+    if (q) renderQuestion(q);
+  });
+  modalOptions.appendChild(confirmBtn);
+
   document.getElementById('category-modal').classList.add('show');
+}
+
+function refreshCategoryModal() {
+  const modalOptions = document.getElementById('modal-options');
+  const btns = modalOptions.querySelectorAll('.modal-option:not(:first-child)');
+  let idx = 0;
+  CATEGORIES.filter(c => c !== '全部').forEach(cat => {
+    if (idx < btns.length && !btns[idx].classList.contains('btn-primary')) {
+      const isSelected = currentFilters.includes(cat);
+      btns[idx].className = 'modal-option' + (isSelected ? ' selected' : '');
+      btns[idx].textContent = (isSelected ? '☑ ' : '☐ ') + cat;
+      idx++;
+    }
+  });
+  // Update 全部 state
+  const allBtn = modalOptions.querySelector('.modal-option');
+  if (allBtn) {
+    allBtn.className = 'modal-option' + (currentFilters.length === 0 ? ' selected' : '');
+  }
 }
 
 // ============================================================
@@ -1184,11 +1328,32 @@ const startCards = document.querySelectorAll('.quick-card');
 if (startCards.length >= 1) {
   startCards[0].addEventListener('click', () => {
     redoingWrong = false;
+    examMode = false;
     switchView('quiz');
-    if (!currentQuestion) {
-      const q = pickNextQuestion();
-      if (q) renderQuestion(q);
-    }
+    currentQuestion = null;
+    const q = pickNextQuestion();
+    if (q) renderQuestion(q);
+  });
+}
+
+// 首页"考试模式"卡片
+if (startCards.length >= 2) {
+  startCards[1].addEventListener('click', () => {
+    redoingWrong = false;
+    examMode = true;
+    // Randomly pick 20 questions from the active filter
+    const hasFilter = currentFilters.length > 0;
+    const pool = hasFilter
+      ? ALL_QUESTIONS.filter(q => currentFilters.includes(q.category))
+      : ALL_QUESTIONS;
+    // Shuffle and pick 20
+    const shuffled = [...pool].sort(() => Math.random() - 0.5);
+    examQuestions = shuffled.slice(0, Math.min(20, shuffled.length));
+    examIndex = 0;
+    currentQuestion = null;
+    switchView('quiz');
+    const q = pickNextQuestion();
+    if (q) renderQuestion(q);
   });
 }
 
@@ -1211,7 +1376,7 @@ document.getElementById('clear-all-btn').addEventListener('click', () => {
 document.getElementById('redo-all-btn').addEventListener('click', () => {
   if (state.wrongIds.length === 0) return;
   redoingWrong = true;
-  currentFilter = '全部';
+  currentFilters = [];
   const q = pickNextQuestion();
   if (q) {
     renderQuestion(q);

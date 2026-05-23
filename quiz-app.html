@@ -1156,7 +1156,7 @@ function updateHomeStats() {
   const accuracy = totalDone > 0 ? Math.round((correctCount / totalDone) * 100) : 0;
   const progress = Math.round((totalDone / ALL_QUESTIONS.length) * 100);
 
-  document.getElementById('home-pct').textContent = accuracy + '%';
+  document.getElementById('home-pct').textContent = progress + '%';
   document.getElementById('home-progress-bar').style.width = progress + '%';
   document.getElementById('home-progress-detail').textContent = '已完成 ' + totalDone + '/' + ALL_QUESTIONS.length + ' 题';
   document.getElementById('home-correct').textContent = accuracy + '%';

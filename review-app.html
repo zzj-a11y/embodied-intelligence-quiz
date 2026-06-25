@@ -930,7 +930,7 @@ document.addEventListener('keydown',e=>{
   if(currentSection!=='practice')return;
   switch(e.key){
     case'ArrowRight':nextCard();break;case'ArrowLeft':prevCard();break;
-    case' ':_case'Enter':e.preventDefault();flipCard();break;
+    case' ':case'Enter':e.preventDefault();flipCard();break;
     case'y':markRight();break;case'n':markWrong();break;
   }
 });

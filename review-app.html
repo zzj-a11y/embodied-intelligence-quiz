@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>复赛备考 · 天玑识骨</title>
+<style>
+/* ===== RESET & BASE ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface2: #21262d;
+  --border: #30363d;
+  --text: #e6edf3;
+  --text2: #8b949e;
+  --text3: #6e7681;
+  --accent-code: #00ff88;
+  --accent-btn: #006644;
+  --accent-btn-hover: #007f55;
+  --danger: #f85149;
+  --danger-bg: #490202;
+  --success: #238636;
+  --success-bg: #04260f;
+  --module-A: #58a6ff;
+  --module-B: #f0883e;
+  --module-C: #d2a800;
+  --module-D: #a371f7;
+  --radius: 8px;
+  --font-mono: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  --font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+}
+html{background:var(--bg);color:var(--text);font-family:var(--font-ui);font-size:16px;line-height:1.6}
+body{max-width:800px;margin:0 auto;padding:16px;min-height:100dvh;display:flex;flex-direction:column}
+
+/* ===== SKELETON LOADING ===== */
+.skeleton{animation:shimmer 1.5s infinite;background:linear-gradient(90deg,var(--surface) 25%,var(--surface2) 50%,var(--surface) 75%);background-size:200% 100%;min-height:200px;border-radius:var(--radius)}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skeleton.hidden{display:none}
+
+/* ===== HEADER ===== */
+header{padding:12px 0;border-bottom:1px solid var(--border);margin-bottom:16px}
+.header-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-icon{width:32px;height:32px;border-radius:6px;background:linear-gradient(135deg,#00ff88,#006644);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff}
+.brand-text{font-size:18px;font-weight:700;letter-spacing:-0.02em}
+.brand-sub{font-size:11px;color:var(--text2);font-family:var(--font-mono)}
+.gold-line{height:2px;background:linear-gradient(90deg,transparent,#00ff88,transparent);margin-top:10px;border-radius:1px}
+
+/* ===== PROGRESS BAR ===== */
+.progress-wrap{margin:12px 0 16px}
+.progress-info{display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:4px;font-family:var(--font-mono)}
+.progress-track{height:4px;background:var(--surface2);border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;background:var(--accent-code);border-radius:2px;transition:width .4s ease}
+
+/* ===== MODULE TABS ===== */
+.tabs{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap}
+.tab{padding:8px 16px;border:1px solid var(--border);border-radius:20px;background:var(--surface);color:var(--text2);cursor:pointer;font-size:13px;font-family:var(--font-mono);transition:all .2s;user-select:none}
+.tab:hover{border-color:var(--text3);color:var(--text)}
+.tab.active{background:var(--surface2);border-color:var(--accent-code);color:var(--accent-code)}
+.tab .tab-count{font-size:11px;opacity:.6;margin-left:4px}
+
+/* ===== MODE SWITCH ===== */
+.mode-switch{display:flex;gap:4px;margin-bottom:16px;background:var(--surface);border-radius:20px;padding:3px;width:fit-content}
+.mode-btn{padding:6px 18px;border-radius:18px;border:none;background:transparent;color:var(--text2);cursor:pointer;font-size:13px;font-family:var(--font-mono);transition:all .2s}
+.mode-btn.active{background:var(--surface2);color:var(--accent-code);box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.mode-btn:hover:not(.active){color:var(--text)}
+
+/* ===== FLASHCARD ===== */
+.card-scene{perspective:1000px;min-height:320px;display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+.card{position:relative;width:100%;max-width:640px;min-height:280px;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.16,1,.3,1);cursor:pointer}
+.card.flipped{transform:rotateY(180deg)}
+.card-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);padding:24px;display:flex;flex-direction:column}
+.card-back{transform:rotateY(180deg);background:var(--surface);border-color:var(--accent-code)}
+
+/* ===== CARD FRONT ===== */
+.card-module-tag{display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-family:var(--font-mono);font-weight:600;margin-bottom:12px;width:fit-content}
+.card-module-tag.A{background:rgba(88,166,255,.15);color:var(--module-A)}
+.card-module-tag.B{background:rgba(240,136,62,.15);color:var(--module-B)}
+.card-module-tag.C{background:rgba(210,168,0,.15);color:var(--module-C)}
+.card-module-tag.D{background:rgba(163,113,247,.15);color:var(--module-D)}
+.card-id{font-family:var(--font-mono);font-size:14px;color:var(--accent-code);margin-bottom:8px}
+.card-title{font-size:20px;font-weight:700;margin-bottom:12px;letter-spacing:-0.01em}
+.card-desc{font-size:14px;color:var(--text2);margin-bottom:16px;line-height:1.6}
+.card-hint{font-size:12px;color:var(--text3);margin-top:auto;text-align:center;font-family:var(--font-mono);animation:pulse 2s infinite}
+.card-hint.flipped-hidden{display:none}
+@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+
+/* ===== CARD BACK (ANSWER) ===== */
+.answer-label{font-size:11px;color:var(--accent-code);font-family:var(--font-mono);margin-bottom:8px;text-transform:uppercase;letter-spacing:.1em}
+.answer-code{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:16px;font-family:var(--font-mono);font-size:14px;color:var(--accent-code);overflow-x:auto;white-space:pre-wrap;word-break:break-all;line-height:1.7;margin-bottom:16px}
+.answer-code .kw{color:#ff7b72}
+.answer-code .str{color:#a5d6ff}
+.answer-code .cmt{color:#6e7681;font-style:italic}
+.answer-explain{font-size:13px;color:var(--text2);line-height:1.7;border-left:2px solid var(--border);padding-left:12px}
+
+/* ===== ACTION BUTTONS ===== */
+.card-actions{display:flex;gap:8px;justify-content:center;margin-top:8px}
+.btn{padding:10px 24px;border-radius:var(--radius);border:none;cursor:pointer;font-family:var(--font-mono);font-size:13px;font-weight:600;transition:all .15s;user-select:none}
+.btn:active{transform:scale(.98)}
+.btn-wrong{background:var(--danger-bg);color:var(--danger);border:1px solid rgba(248,81,73,.3)}
+.btn-wrong:hover{background:rgba(248,81,73,.2)}
+.btn-right{background:var(--accent-btn);color:#fff;border:1px solid rgba(0,255,136,.2)}
+.btn-right:hover{background:var(--accent-btn-hover)}
+.btn-nav{padding:8px 16px;background:var(--surface);color:var(--text2);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;font-family:var(--font-mono);font-size:12px;transition:all .15s}
+.btn-nav:hover{color:var(--text);border-color:var(--text3)}
+.btn-nav:disabled{opacity:.3;cursor:not-allowed}
+.btn-nav:active:not(:disabled){transform:scale(.98)}
+
+/* ===== NAVIGATION ===== */
+.nav-row{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:8px}
+.nav-pos{font-family:var(--font-mono);font-size:12px;color:var(--text3);min-width:60px;text-align:center}
+
+/* ===== OVERVIEW MODE ===== */
+.overview-list{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+@media(max-width:600px){.overview-list{grid-template-columns:1fr}}
+.overview-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;cursor:pointer;transition:all .15s}
+.overview-item:hover{border-color:var(--text3)}
+.overview-item.mastered{opacity:.4;border-color:transparent}
+.overview-item .oi-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.overview-item .oi-id{font-family:var(--font-mono);font-size:11px;color:var(--accent-code)}
+.overview-item .oi-score{font-family:var(--font-mono);font-size:10px;color:var(--text3);margin-left:auto}
+.overview-item .oi-title{font-size:14px;font-weight:600;margin-bottom:4px}
+.overview-item .oi-answer{font-family:var(--font-mono);font-size:12px;color:var(--text3);padding:4px 8px;background:var(--bg);border-radius:4px;margin-top:6px;filter:blur(8px);transition:filter .3s}
+.overview-item .oi-answer.revealed{filter:none;color:var(--accent-code)}
+.overview-item .oi-answer:hover{filter:none;color:var(--accent-code)}
+
+/* ===== TOAST ===== */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 20px;font-family:var(--font-mono);font-size:12px;color:var(--text);z-index:20;opacity:0;pointer-events:none;transition:opacity .3s}
+.toast.show{opacity:1}
+
+/* ===== EMPTY STATE ===== */
+.empty-state{text-align:center;padding:48px 24px;display:none}
+.empty-state.visible{display:block}
+.empty-state .empty-icon{font-size:48px;margin-bottom:12px;opacity:.5}
+.empty-state .empty-title{font-size:16px;font-weight:600;margin-bottom:8px}
+.empty-state .empty-desc{font-size:13px;color:var(--text3)}
+
+/* ===== ERROR STATE ===== */
+.error-toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--danger-bg);border:1px solid rgba(248,81,73,.3);color:var(--danger);padding:8px 18px;border-radius:var(--radius);font-family:var(--font-mono);font-size:12px;z-index:20;opacity:0;transition:opacity .3s}
+.error-toast.show{opacity:1}
+
+/* ===== STATS BAR ===== */
+.stats-bar{display:flex;gap:16px;font-family:var(--font-mono);font-size:11px;color:var(--text3);margin-bottom:8px;flex-wrap:wrap}
+.stats-bar .stat-val{color:var(--accent-code);font-weight:600}
+
+/* ===== FOOTER ===== */
+footer{text-align:center;padding:24px 0 12px;font-size:11px;color:var(--text3);margin-top:auto;border-top:1px solid var(--border)}
+footer .gold-text{background:linear-gradient(90deg,#00cc66,#00ff88,#00cc66);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:600}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:480px){
+  body{padding:10px}
+  .tabs{gap:4px}
+  .tab{padding:6px 12px;font-size:12px}
+  .card-face{padding:16px}
+  .card-title{font-size:17px}
+  .answer-code{font-size:12px}
+  .mode-btn{padding:5px 14px;font-size:12px}
+}
+
+/* ===== REDUCED MOTION ===== */
+@media(prefers-reduced-motion:reduce){
+  .card{transition:none}
+  .card.flipped{transform:none}
+  .card .card-front{display:none}
+  .card .card-back{position:static;transform:none;backface-visibility:visible}
+  .card.flipped .card-front{display:none}
+  .card.flipped .card-back{display:flex}
+  .card:not(.flipped) .card-back{display:none}
+  .card:not(.flipped) .card-front{display:flex;position:static}
+  .card-hint{animation:none}
+  .skeleton{animation:none;background:var(--surface)}
+  .progress-fill{transition:none}
+}
+</style>
+</head>
+<body>
+
+<!-- SKELETON -->
+<div class="skeleton" id="skeleton"></div>
+
+<!-- MAIN CONTENT (hidden during load) -->
+<main id="main" style="display:none">
+
+<header>
+  <div class="header-top">
+    <div class="brand">
+      <div class="brand-icon">玑</div>
+      <div>
+        <div class="brand-text">复赛备考复习</div>
+        <div class="brand-sub">embodied-ai review</div>
+      </div>
+    </div>
+    <div class="stats-bar" id="statsBar"></div>
+  </div>
+  <div class="gold-line"></div>
+  <div class="progress-wrap">
+    <div class="progress-info"><span id="progressLabel">已掌握 0 / 19</span><span id="progressPct">0%</span></div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  </div>
+</header>
+
+<!-- MODE SWITCH -->
+<div class="mode-switch">
+  <button class="mode-btn active" data-mode="flashcard" id="modeFlashcard">闪卡模式</button>
+  <button class="mode-btn" data-mode="overview" id="modeOverview">一览模式</button>
+</div>
+
+<!-- MODULE TABS -->
+<div class="tabs" id="tabs">
+  <button class="tab active" data-module="all">全部<span class="tab-count">19</span></button>
+  <button class="tab" data-module="A">A:大模型<span class="tab-count">4</span></button>
+  <button class="tab" data-module="B">B:视觉<span class="tab-count">4</span></button>
+  <button class="tab" data-module="C">C:可视化<span class="tab-count">6</span></button>
+  <button class="tab" data-module="D">D:集成<span class="tab-count">5</span></button>
+</div>
+
+<!-- FLASHCARD VIEW -->
+<div id="flashcardView">
+  <div class="card-scene">
+    <div class="card" id="card" onclick="flipCard()">
+      <div class="card-face card-front">
+        <span class="card-module-tag" id="cardModule">A</span>
+        <div class="card-id" id="cardId">#A1</div>
+        <div class="card-title" id="cardTitle"></div>
+        <div class="card-desc" id="cardDesc"></div>
+        <div class="card-hint" id="cardHint">点击翻转查看答案</div>
+      </div>
+      <div class="card-face card-back">
+        <div class="answer-label">answer</div>
+        <div class="answer-code" id="answerCode"></div>
+        <div class="answer-explain" id="answerExplain"></div>
+      </div>
+    </div>
+  </div>
+  <div class="card-actions">
+    <button class="btn btn-wrong" onclick="markWrong()">不会</button>
+    <button class="btn btn-right" onclick="markRight()">会了</button>
+  </div>
+  <div class="nav-row">
+    <button class="btn-nav" id="btnPrev" onclick="prevCard()">上一题</button>
+    <span class="nav-pos" id="navPos">1 / 19</span>
+    <button class="btn-nav" id="btnNext" onclick="nextCard()">下一题</button>
+  </div>
+</div>
+
+<!-- OVERVIEW VIEW -->
+<div id="overviewView" style="display:none">
+  <div class="overview-list" id="overviewList"></div>
+</div>
+
+<!-- EMPTY STATE -->
+<div class="empty-state" id="emptyState">
+  <div class="empty-icon">-</div>
+  <div class="empty-title">该模块暂无题目</div>
+  <div class="empty-desc">请选择其他模块查看</div>
+</div>
+
+</main>
+
+<footer>
+  <span class="gold-text">天玑识骨</span> · 具身智能多传感器融合应用赛 · 复赛备考
+</footer>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+<div class="error-toast" id="errorToast"></div>
+
+<script>
+// ===== QUESTION DATA =====
+const QUESTIONS = [
+  // ---- MODULE A: 大模型目标分类 (llm_waste_classification_push.py) ----
+  {
+    id: 'A1', module: 'A', score: 4,
+    title: '读取大模型返回的动作字符串',
+    desc: 'process()函数中, LLM返回的JSON已被eval()解析为字典result。请从result中取出action字符串赋值给text。',
+    context: 'result = eval(self.llm_result[...])\ntext = ""  # 原代码: text = result[\'action\']',
+    answer: "text = result['action']",
+    explanation: 'result 是字典, 键 "action" 存储类似 garbage_classification(\'food_waste\') 的字符串。参考 llm_waste_classification.py 第188行。'
+  },
+  {
+    id: 'A2', module: 'A', score: 5,
+    title: '从 params 提取垃圾类别列表',
+    desc: '正则已匹配到 garbage_classification(...) 括号内的参数存于 params。请用正则提取引号内的垃圾类别名到 objects 列表。',
+    context: "params = match.group(1)  # e.g. 'food_waste', 'hazardous_waste'\nobjects = []  # 原代码: re.findall(r\"['\\\"]([^'\\\"]+)['\\\"]\", params)",
+    answer: 'objects = re.findall(r"[\'\\"]([^\'\\"]+)[\'\\"]", params)',
+    explanation: 're.findall 提取所有引号包裹的字符串, 返回列表如 [\'food_waste\', \'hazardous_waste\']。参考 llm_waste_classification.py 第198行。'
+  },
+  {
+    id: 'A3', module: 'A', score: 5,
+    title: '设置语音回复文本',
+    desc: 'LLM的response字段包含给用户的回复文本。请将其填入ROS2 String消息的data字段, 发布给TTS节点播报。',
+    context: "if 'response' in result:\n    msg.data = \"\"  # 原代码: msg.data = result['response']",
+    answer: "msg.data = result['response']",
+    explanation: "result['response'] 是 LLM 生成的回复 (如 '收到, 我马上收拾'), 通过 msg.data 传给 TTS 播报。参考 llm_waste_classification.py 第213行。"
+  },
+  {
+    id: 'A4', module: 'A', score: 6,
+    title: '关闭机械臂使能开关 (A模块测试)',
+    desc: 'A模块单独测试时机械臂不能动作。请设置 enable_sorting 为合适的值, 确保 D 模块分支不被执行。',
+    context: '# enable_sorting = True   # D模块联调时使用\nenable_sorting = False  # False = A模块关闭机械臂',
+    answer: 'enable_sorting = False',
+    explanation: 'A模块测试阶段必须为 False, 只有D模块最终联调经教师确认安全后才改为 True。这是唯一需要根据场景判断的题。'
+  },
+
+  // ---- MODULE B: 视觉模块/目标筛选 (waste_classification_push.py) ----
+  {
+    id: 'B1', module: 'B', score: 5,
+    title: '补齐可回收物识别类别 (YOLO标签)',
+    desc: 'WASTE_CLASSES 字典中 recyclable_waste 的值为空元组。请填入三种可回收物对应的 YOLO 检测标签。',
+    context: "WASTE_CLASSES = {\n  'food_waste': ('BananaPeel', 'BrokenBones', 'Ketchup'),\n  'hazardous_waste': ('Marker', 'OralLiquidBottle', 'StorageBattery'),\n  'recyclable_waste': (),  # 需补齐\n  'residual_waste': ('Plate', 'CigaretteEnd', 'DisposableChopsticks'),\n}",
+    answer: "'recyclable_waste': ('PlasticBottle', 'Toothbrush', 'Umbrella'),",
+    explanation: '三种可回收物: 塑料瓶(PlasticBottle)、牙刷(Toothbrush)、雨伞(Umbrella)。参考 waste_classification.py 第33行。'
+  },
+  {
+    id: 'B2', module: 'B', score: 5,
+    title: '按垃圾大类展开识别类别列表',
+    desc: 'set_target_srv_callback() 中 request.data 是垃圾大类列表。请从对应字典中查询展开为 YOLO 检测标签。',
+    context: "target_list = []\nfor i in request.data:\n    target_list.extend(list({}.get(i, [])))  # 需修改 {} 为正确字典名",
+    answer: 'target_list.extend(list(WASTE_CLASSES.get(i, [])))',
+    explanation: 'WASTE_CLASSES 字典将垃圾大类映射到 YOLO 标签元组, .get(i, []) 安全查找。参考 waste_classification.py 第248行。'
+  },
+  {
+    id: 'B3', module: 'B', score: 5,
+    title: '判断识别类别是否在目标列表中',
+    desc: 'get_object_callback() 遍历 YOLO 检测结果。请判断当前物体的 class_name 是否在 self.target_list 中。',
+    context: "for i in objects:\n    target = [i.class_name, ...]\n    if False:  # 需修改为正确的成员判断\n        local_object_info = target",
+    answer: 'if i.class_name in self.target_list:',
+    explanation: '只有 YOLO 检测到的物体类别存在于 target_list 中时, 才将其作为候选抓取目标。参考 waste_classification.py 第423行。'
+  },
+  {
+    id: 'B4', module: 'B', score: 5,
+    title: '深拷贝保存候选目标信息',
+    desc: '当选出候选目标后需保存其信息。请使用深拷贝防止后续修改影响已保存的目标数据。',
+    context: 'if local_target_object_info is not None:\n    self.target_object_info = None  # 需改为 copy.deepcopy(...)',
+    answer: 'self.target_object_info = copy.deepcopy(local_target_object_info)',
+    explanation: '必须 deepcopy, 因为 local_target_object_info 包含嵌套列表 (坐标、角度等), 浅拷贝会导致数据被意外修改。参考 waste_classification.py 第437行。'
+  },
+
+  // ---- MODULE C: 数据可视化接口 (app.py + warehouse.py) ----
+  {
+    id: 'C1', module: 'C', score: 5,
+    title: '从传感器服务获取超声波数据',
+    desc: 'get_ultrasonic_data() 目前返回 mock 数据。请调用 self.sensor_service 获取真实超声波传感器读数。',
+    context: "# ultrasonic_data = {'distance': 0, ...}  # mock\nultrasonic_data = ...  # 需改为 self.sensor_service.get_ultrasonic_data()",
+    answer: 'ultrasonic_data = self.sensor_service.get_ultrasonic_data()',
+    explanation: 'sensor_service 已在 __init__ 中初始化 (self.sensor_service = SensorService(...)), 直接调用其 get_ultrasonic_data() 方法。参考 app.py 第263行注释。'
+  },
+  {
+    id: 'C2', module: 'C', score: 5,
+    title: 'JSON 返回超声波距离值',
+    desc: '在 jsonify 返回值中填入超声波距离字段, 从 C1 获取的字典中取出 distance。',
+    context: "return jsonify({\n  'success': True,\n  'data': {\n    'distance': 0  # 需改为 ultrasonic_data['distance']\n  },\n  ...\n})",
+    answer: "'distance': ultrasonic_data['distance']",
+    explanation: 'ultrasonic_data 字典的 distance 键存储测距值 (单位 cm), 直接取出填入 JSON。参考 app.py 第270行注释。'
+  },
+  {
+    id: 'C3', module: 'C', score: 5,
+    title: '从传感器服务获取 DHT11 温湿度数据',
+    desc: 'get_dht11_data() 目前返回 mock 数据。请改为调用 sensor_service 获取真实温湿度读数。',
+    context: "# dht11_data = {'temperature': 0, 'humidity': 0, ...}  # mock\ndht11_data = ...  # 需改为 self.sensor_service.get_dht11_data()",
+    answer: 'dht11_data = self.sensor_service.get_dht11_data()',
+    explanation: '与 C1 同理, sensor_service 提供 get_dht11_data() 方法返回包含 temperature 和 humidity 的字典。参考 app.py 第234行注释。'
+  },
+  {
+    id: 'C4-1', module: 'C', score: 2.5,
+    title: 'JSON 返回温度值',
+    desc: '在 jsonify 的 data 对象中, 填入 temperature 字段, 从 C3 获取的字典取值。',
+    context: "'data': {\n  'temperature': 0,  # 需改为 dht11_data['temperature']\n  'humidity': 0\n}",
+    answer: "'temperature': dht11_data['temperature']",
+    explanation: '从 dht11_data 字典取出 temperature (单位摄氏度)。参考 app.py 第241行注释。'
+  },
+  {
+    id: 'C4-2', module: 'C', score: 2.5,
+    title: 'JSON 返回湿度值',
+    desc: '在 jsonify 的 data 对象中填入 humidity 字段。',
+    context: "'data': {\n  'temperature': dht11_data['temperature'],\n  'humidity': 0  # 需改为 dht11_data['humidity']\n}",
+    answer: "'humidity': dht11_data['humidity']",
+    explanation: '从 dht11_data 字典取出 humidity (百分比)。参考 app.py 第244行注释。'
+  },
+  {
+    id: 'C5', module: 'C', score: 5,
+    title: '计算仓库占用率',
+    desc: 'get_status() 中 usage_rate 当前为 0。请根据当前数量与容量计算百分比, 保留一位小数, 防除零。',
+    context: "# 'usage_rate': 0\n'usage_rate': _____  # 计算公式: round((current/capacity)*100, 1) if capacity else 0",
+    answer: "'usage_rate': round((self._data[i] / self._capacity) * 100, 1) if self._capacity else 0",
+    explanation: 'self._data[i] 是当前数量, self._capacity 是容量 (默认12)。round(..., 1) 保留一位小数, if-else 防除零。参考 warehouse.py 第33行注释。'
+  },
+  {
+    id: 'C6', module: 'C', score: 5,
+    title: 'SSE 广播仓库更新事件 (4个子字段)',
+    desc: 'update_warehouse_quantity() 中需通过 SSE 广播仓库变更。请填入四个字段: warehouses, updated_warehouse, old_quantity, new_quantity。',
+    context: "self.sse_service.broadcast_event('message', {\n  'warehouses': [],           # 应填 warehouse_list\n  'updated_warehouse': None,  # 应填 warehouse_id\n  'old_quantity': None,       # 应填 old_quantity\n  'new_quantity': None        # 应填 quantity\n})",
+    answer: "'warehouses': warehouse_list,\n'updated_warehouse': warehouse_id,\n'old_quantity': old_quantity,\n'new_quantity': quantity",
+    explanation: '这四个变量在函数中均已定义: warehouse_list 从 get_status() 获取, warehouse_id/old_quantity/quantity 在执行流程中已赋值。参考 app.py 第362-381行注释。'
+  },
+
+  // ---- MODULE D: 多模态系统集成 ----
+  {
+    id: 'D1', module: 'D', score: 6,
+    title: '将目标类别写入 set_target 请求',
+    desc: 'ifenable_sorting 分支中, msgs.data 需要填入 A2 提取到的垃圾类别列表 objects。',
+    context: 'msgs = SetStringList.Request()\nmsgs.data = []  # 应填 objects',
+    answer: 'msgs.data = objects',
+    explanation: 'objects 是 A2 中正则提取的垃圾类别列表 (如 [\'recyclable_waste\'])。参考 llm_waste_classification.py 第202行。'
+  },
+  {
+    id: 'D2', module: 'D', score: 6,
+    title: '调用 set_target 服务',
+    desc: '使用节点封装的 send_request 方法, 异步调用 set_target 服务, 将目标类别传给视觉分拣节点。',
+    context: '# res = self.send_request(self.set_target_client, msgs)\nres = None  # 应改为调用 send_request',
+    answer: 'res = self.send_request(self.set_target_client, msgs)',
+    explanation: 'send_request() 是节点内封装的方法, 接收 client 和 request 两个参数, 返回服务响应。参考 llm_waste_classification.py 第203行。'
+  },
+  {
+    id: 'D3', module: 'D', score: 6,
+    title: '启动真实分拣 (机械臂抓取)',
+    desc: '教师确认安全后, 将 start_msg.data 设为 True, 启动视觉-抓取-放置流水线。',
+    context: 'start_msg = SetBool.Request()\nstart_msg.data = False  # 应改为 True (联调时)',
+    answer: 'start_msg.data = True',
+    explanation: 'True 启动真实分拣, enable_transport 打开后视觉节点触发机械臂抓取。需教师确认安全后执行。参考 llm_waste_classification.py 第209行。'
+  },
+  {
+    id: 'D4', module: 'D', score: 6,
+    title: '根据垃圾类别查找仓库编号',
+    desc: 'push_dashboard_data() 中需根据垃圾类别 target 查找对应的仓库 ID, 使用文件顶部定义的 WAREHOUSE_MAPPING 字典。',
+    context: "WAREHOUSE_MAPPING = {\n  'recyclable_waste': 1,\n  'hazardous_waste': 2,\n  'food_waste': 3,\n  'residual_waste': 4\n}\n# 使用: warehouse_id = 1  # 应改为 WAREHOUSE_MAPPING[target]",
+    answer: 'warehouse_id = WAREHOUSE_MAPPING[target]',
+    explanation: 'target 是垃圾类别字符串, WAREHOUSE_MAPPING 将其映射为 1-4 的仓库编号。参考 waste_classification_push.py 第354行注释和第51-56行定义。'
+  },
+  {
+    id: 'D5', module: 'D', score: 6,
+    title: '返回相机服务真实状态',
+    desc: 'health_check() 的 services 字段中 camera 当前为 False。请调用 camera_service.is_active() 获取真实运行状态。',
+    context: "'services': {\n  'camera': False,  # 应改为 self.camera_service.is_active()\n  'sensor': self.sensor_service.is_active(),\n  'sse': self.sse_service.is_running()\n}",
+    answer: "'camera': self.camera_service.is_active()",
+    explanation: 'camera_service 在 __init__ 中初始化, is_active() 返回布尔值表示相机是否正常运行。参考 app.py 第123行注释。'
+  }
+];
+
+// ===== APP STATE =====
+const STORAGE_KEY = 'review-progress-v1';
+let mastered = new Set();       // Set of question ids that user marked "会了"
+let currentMode = 'flashcard';  // 'flashcard' | 'overview'
+let currentModule = 'all';      // 'all' | 'A' | 'B' | 'C' | 'D'
+let currentIndex = 0;           // Index within filtered list
+let filteredQuestions = [];     // Questions after module filter
+let isFlipped = false;
+
+// ===== INIT =====
+function init() {
+  loadProgress();
+  applyModuleFilter();
+  updateAllUI();
+  // Hide skeleton, show main
+  document.getElementById('skeleton').classList.add('hidden');
+  document.getElementById('main').style.display = '';
+}
+
+function loadProgress() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const arr = JSON.parse(raw);
+      mastered = new Set(arr);
+    }
+  } catch (e) {
+    showError('localStorage 读取失败, 进度可能丢失');
+  }
+}
+
+function saveProgress() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([...mastered]));
+  } catch (e) {
+    showError('localStorage 写入失败, 进度未保存');
+  }
+}
+
+function applyModuleFilter() {
+  if (currentModule === 'all') {
+    filteredQuestions = [...QUESTIONS];
+  } else {
+    filteredQuestions = QUESTIONS.filter(q => q.module === currentModule);
+  }
+  // Clamp index
+  if (filteredQuestions.length === 0) {
+    currentIndex = 0;
+  } else if (currentIndex >= filteredQuestions.length) {
+    currentIndex = filteredQuestions.length - 1;
+  }
+}
+
+// ===== UI UPDATES =====
+function updateAllUI() {
+  updateProgress();
+  updateTabs();
+  updateStats();
+  if (currentMode === 'flashcard') {
+    document.getElementById('flashcardView').style.display = '';
+    document.getElementById('overviewView').style.display = 'none';
+    updateFlashcard();
+  } else {
+    document.getElementById('flashcardView').style.display = 'none';
+    document.getElementById('overviewView').style.display = '';
+    updateOverview();
+  }
+  updateEmptyState();
+}
+
+function updateProgress() {
+  const total = QUESTIONS.length;
+  const done = mastered.size;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  document.getElementById('progressLabel').textContent = `已掌握 ${done} / ${total}`;
+  document.getElementById('progressPct').textContent = `${pct}%`;
+  document.getElementById('progressFill').style.width = `${pct}%`;
+}
+
+function updateTabs() {
+  document.querySelectorAll('#tabs .tab').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.module === currentModule);
+  });
+}
+
+function updateStats() {
+  const total = filteredQuestions.length;
+  if (total === 0) {
+    document.getElementById('statsBar').innerHTML = '';
+    return;
+  }
+  const q = filteredQuestions[currentIndex];
+  const currentMastered = q ? mastered.has(q.id) : false;
+  const moduleMastered = filteredQuestions.filter(q => mastered.has(q.id)).length;
+  document.getElementById('statsBar').innerHTML =
+    `<span>当前: <span class="stat-val">${q ? '#' + q.id : '-'}</span></span>` +
+    `<span>状态: <span class="stat-val">${currentMastered ? '已掌握' : '学习中'}</span></span>` +
+    `<span>本组掌握: <span class="stat-val">${moduleMastered}/${total}</span></span>` +
+    `<span>得分: <span class="stat-val">${q ? q.score : 0}分</span></span>`;
+}
+
+function updateEmptyState() {
+  const el = document.getElementById('emptyState');
+  if (filteredQuestions.length === 0) {
+    el.classList.add('visible');
+    document.getElementById('flashcardView').style.display = 'none';
+    document.getElementById('overviewView').style.display = 'none';
+  } else {
+    el.classList.remove('visible');
+  }
+}
+
+// ===== FLASHCARD =====
+function updateFlashcard() {
+  if (filteredQuestions.length === 0) return;
+  const q = filteredQuestions[currentIndex];
+  isFlipped = false;
+  document.getElementById('card').classList.remove('flipped');
+
+  // Front
+  document.getElementById('cardModule').textContent = '模块 ' + q.module;
+  document.getElementById('cardModule').className = 'card-module-tag ' + q.module;
+  document.getElementById('cardId').textContent = '#' + q.id + ' · ' + q.score + '分';
+  document.getElementById('cardTitle').textContent = q.title;
+  document.getElementById('cardDesc').textContent = q.desc;
+  document.getElementById('cardHint').classList.remove('flipped-hidden');
+
+  // Back (pre-set for flip)
+  document.getElementById('answerCode').innerHTML = highlightCode(q.answer);
+  document.getElementById('answerExplain').textContent = q.explanation;
+
+  // Nav
+  document.getElementById('navPos').textContent = `${currentIndex + 1} / ${filteredQuestions.length}`;
+  document.getElementById('btnPrev').disabled = currentIndex <= 0;
+  document.getElementById('btnNext').disabled = currentIndex >= filteredQuestions.length - 1;
+
+  updateStats();
+}
+
+function flipCard() {
+  if (filteredQuestions.length === 0) return;
+  isFlipped = !isFlipped;
+  document.getElementById('card').classList.toggle('flipped', isFlipped);
+  document.getElementById('cardHint').classList.toggle('flipped-hidden', isFlipped);
+}
+
+function markRight() {
+  if (filteredQuestions.length === 0) return;
+  const q = filteredQuestions[currentIndex];
+  mastered.add(q.id);
+  saveProgress();
+  updateProgress();
+  updateStats();
+  showToast(`#${q.id} 已标记为掌握`);
+}
+
+function markWrong() {
+  if (filteredQuestions.length === 0) return;
+  const q = filteredQuestions[currentIndex];
+  mastered.delete(q.id);
+  saveProgress();
+  updateProgress();
+  updateStats();
+  showToast(`#${q.id} 已标记为未掌握`);
+}
+
+function nextCard() {
+  if (currentIndex < filteredQuestions.length - 1) {
+    currentIndex++;
+    updateFlashcard();
+    updateStats();
+  }
+}
+
+function prevCard() {
+  if (currentIndex > 0) {
+    currentIndex--;
+    updateFlashcard();
+    updateStats();
+  }
+}
+
+// ===== OVERVIEW =====
+function updateOverview() {
+  const container = document.getElementById('overviewList');
+  container.innerHTML = filteredQuestions.map((q, i) => {
+    const isMastered = mastered.has(q.id);
+    return `
+      <div class="overview-item${isMastered ? ' mastered' : ''}" onclick="jumpToFlashcard(${i})">
+        <div class="oi-header">
+          <span class="oi-id" style="color:var(--module-${q.module})">#${q.id}</span>
+          <span class="oi-score">${q.score}分</span>
+        </div>
+        <div class="oi-title">${q.title}</div>
+        <div class="oi-answer" onclick="event.stopPropagation();this.classList.toggle('revealed')">
+          ${escapeHtml(q.answer)}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function jumpToFlashcard(index) {
+  currentIndex = index;
+  currentMode = 'flashcard';
+  document.getElementById('modeFlashcard').classList.add('active');
+  document.getElementById('modeOverview').classList.remove('active');
+  updateAllUI();
+}
+
+// ===== MODULE SWITCHING =====
+function switchModule(module) {
+  currentModule = module;
+  currentIndex = 0;
+  isFlipped = false;
+  applyModuleFilter();
+  updateAllUI();
+}
+
+// ===== MODE SWITCHING =====
+function switchMode(mode) {
+  currentMode = mode;
+  document.getElementById('modeFlashcard').classList.toggle('active', mode === 'flashcard');
+  document.getElementById('modeOverview').classList.toggle('active', mode === 'overview');
+  updateAllUI();
+}
+
+// ===== HELPERS =====
+function highlightCode(code) {
+  // Simple syntax highlighting for Python code
+  let html = escapeHtml(code);
+  // Strings
+  html = html.replace(/(['"])([^'"]*)(['"])/g, '<span class="str">$1$2$3</span>');
+  // Comments
+  html = html.replace(/(#.+)$/gm, '<span class="cmt">$1</span>');
+  // Keywords
+  html = html.replace(/\b(if|else|elif|for|in|not|and|or|True|False|None|import|from|def|return|class|self|copy|re|result|params|match|objects|text|msg|msgs|res|start_msg|enable_sorting|dht11_data|ultrasonic_data|warehouse_list|warehouse_id|old_quantity|new_quantity|quantity|target)\b/g,
+    '<span class="kw">$1</span>');
+  return html;
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._timeout);
+  el._timeout = setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorToast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._timeout);
+  el._timeout = setTimeout(() => el.classList.remove('show'), 4000);
+}
+
+// ===== EVENT LISTENERS =====
+document.getElementById('modeFlashcard').addEventListener('click', () => switchMode('flashcard'));
+document.getElementById('modeOverview').addEventListener('click', () => switchMode('overview'));
+
+document.querySelectorAll('#tabs .tab').forEach(btn => {
+  btn.addEventListener('click', () => switchModule(btn.dataset.module));
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  switch (e.key) {
+    case 'ArrowRight': nextCard(); break;
+    case 'ArrowLeft': prevCard(); break;
+    case ' ': case 'Enter': e.preventDefault(); flipCard(); break;
+    case 'y': markRight(); break;
+    case 'n': markWrong(); break;
+  }
+});
+
+// ===== BOOT =====
+init();
+</script>
+</body>
+</html>

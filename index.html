@@ -17,8 +17,9 @@
   .sub{font-size:13px;color:#8b949e;margin-bottom:32px}
   .cards{display:flex;flex-direction:column;gap:12px}
   .card{display:block;background:#161b22;border:1px solid #30363d;border-radius:12px;padding:20px;
-    text-decoration:none;color:#e6edf3;transition:all .2s;text-align:left}
+    text-decoration:none;color:#e6edf3;transition:all .2s;text-align:left;position:relative;z-index:1;cursor:pointer}
   .card:hover{border-color:#00ff88;transform:translateY(-2px)}
+  .card:active{transform:scale(.98)}
   .card-title{font-size:18px;font-weight:600;margin-bottom:4px}
   .card-desc{font-size:13px;color:#8b949e}
   .card-tag{display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;

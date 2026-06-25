@@ -8,41 +8,25 @@
 <meta name="theme-color" content="#0d1117">
 <title>复赛备考 · 天玑识骨</title>
 <style>
-/* ===== RESET & BASE ===== */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg: #0d1117;
-  --surface: #161b22;
-  --surface2: #21262d;
-  --border: #30363d;
-  --text: #e6edf3;
-  --text2: #8b949e;
-  --text3: #6e7681;
-  --accent-code: #00ff88;
-  --accent-btn: #006644;
-  --accent-btn-hover: #007f55;
-  --danger: #f85149;
-  --danger-bg: #490202;
-  --success: #238636;
-  --success-bg: #04260f;
-  --module-A: #58a6ff;
-  --module-B: #f0883e;
-  --module-C: #d2a800;
-  --module-D: #a371f7;
-  --radius: 8px;
-  --font-mono: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
-  --font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --bg:#0d1117;--surface:#161b22;--surface2:#21262d;--border:#30363d;
+  --text:#e6edf3;--text2:#8b949e;--text3:#6e7681;
+  --accent-code:#00ff88;--accent-btn:#006644;--accent-btn-hover:#007f55;
+  --danger:#f85149;--danger-bg:#490202;--success:#238636;--success-bg:#04260f;
+  --module-A:#58a6ff;--module-B:#f0883e;--module-C:#d2a800;--module-D:#a371f7;
+  --radius:8px;
+  --font-mono:'JetBrains Mono','Cascadia Code','Fira Code','Consolas',monospace;
+  --font-ui:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
 }
 html{background:var(--bg);color:var(--text);font-family:var(--font-ui);font-size:16px;line-height:1.6;-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
-body{max-width:800px;margin:0 auto;padding:16px;padding-top:max(16px, env(safe-area-inset-top));padding-bottom:max(16px, env(safe-area-inset-bottom));padding-left:max(16px, env(safe-area-inset-left));padding-right:max(16px, env(safe-area-inset-right));min-height:100dvh;display:flex;flex-direction:column;overscroll-behavior:none}
+body{max-width:800px;margin:0 auto;padding:16px;padding-top:max(16px,env(safe-area-inset-top));padding-bottom:max(16px,env(safe-area-inset-bottom));padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right));min-height:100dvh;display:flex;flex-direction:column;overscroll-behavior:none}
 
-/* ===== SKELETON LOADING ===== */
-.skeleton{animation:shimmer 1.5s infinite;background:linear-gradient(90deg,var(--surface) 25%,var(--surface2) 50%,var(--surface) 75%);background-size:200% 100%;min-height:200px;border-radius:var(--radius)}
+.skeleton{animation:shimmer 1.5s infinite;background:linear-gradient(90deg,var(--surface)25%,var(--surface2)50%,var(--surface)75%);background-size:200% 100%;min-height:200px;border-radius:var(--radius)}
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 .skeleton.hidden{display:none}
 
-/* ===== HEADER ===== */
-header{padding:12px 0;border-bottom:1px solid var(--border);margin-bottom:16px}
+header{padding:12px 0;border-bottom:1px solid var(--border);margin-bottom:12px}
 .header-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
 .brand{display:flex;align-items:center;gap:10px}
 .brand-icon{width:32px;height:32px;border-radius:6px;background:linear-gradient(135deg,#00ff88,#006644);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff}
@@ -50,55 +34,75 @@ header{padding:12px 0;border-bottom:1px solid var(--border);margin-bottom:16px}
 .brand-sub{font-size:11px;color:var(--text2);font-family:var(--font-mono)}
 .gold-line{height:2px;background:linear-gradient(90deg,transparent,#00ff88,transparent);margin-top:10px;border-radius:1px}
 
-/* ===== PROGRESS BAR ===== */
-.progress-wrap{margin:12px 0 16px}
+/* Section Nav */
+.section-nav{display:flex;gap:0;margin-bottom:12px;background:var(--surface);border-radius:12px;padding:3px}
+.section-nav-btn{flex:1;padding:10px 16px;border:none;background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font-mono);font-size:13px;font-weight:600;border-radius:10px;transition:all .2s;min-height:44px}
+.section-nav-btn.active{background:var(--surface2);color:var(--accent-code);box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.section-nav-btn:hover:not(.active){color:var(--text)}
+
+/* Progress */
+.progress-wrap{margin:8px 0 12px}
 .progress-info{display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:4px;font-family:var(--font-mono)}
 .progress-track{height:4px;background:var(--surface2);border-radius:2px;overflow:hidden}
 .progress-fill{height:100%;background:var(--accent-code);border-radius:2px;transition:width .4s ease}
 
-/* ===== MODULE TABS ===== */
-.tabs{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap}
-.tab{padding:8px 16px;border:1px solid var(--border);border-radius:20px;background:var(--surface);color:var(--text2);cursor:pointer;font-size:13px;font-family:var(--font-mono);transition:all .2s;user-select:none}
+/* Tabs */
+.tabs{display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap}
+.tab{padding:8px 14px;border:1px solid var(--border);border-radius:20px;background:var(--surface);color:var(--text2);cursor:pointer;font-size:12px;font-family:var(--font-mono);transition:all .2s;user-select:none}
 .tab:hover{border-color:var(--text3);color:var(--text)}
 .tab.active{background:var(--surface2);border-color:var(--accent-code);color:var(--accent-code)}
-.tab .tab-count{font-size:11px;opacity:.6;margin-left:4px}
+.tab .tab-count{font-size:10px;opacity:.6;margin-left:3px}
 
-/* ===== MODE SWITCH ===== */
-.mode-switch{display:flex;gap:4px;margin-bottom:16px;background:var(--surface);border-radius:20px;padding:3px;width:fit-content}
+/* Toolbar */
+.toolbar{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;font-family:var(--font-mono);font-size:11px;color:var(--text2)}
+.toolbar label{display:flex;align-items:center;gap:5px;cursor:pointer}
+.toolbar input[type=checkbox]{accent-color:var(--accent-code)}
+
+/* Mode switch */
+.mode-switch{display:flex;gap:4px;margin-bottom:10px;background:var(--surface);border-radius:20px;padding:3px;width:fit-content}
 .mode-btn{padding:6px 18px;border-radius:18px;border:none;background:transparent;color:var(--text2);cursor:pointer;font-size:13px;font-family:var(--font-mono);transition:all .2s}
 .mode-btn.active{background:var(--surface2);color:var(--accent-code);box-shadow:0 1px 3px rgba(0,0,0,.3)}
 .mode-btn:hover:not(.active){color:var(--text)}
 
-/* ===== FLASHCARD ===== */
-.card-scene{perspective:1000px;min-height:320px;display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+/* Flashcard */
+.card-scene{perspective:1000px;min-height:300px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
 .card{position:relative;width:100%;max-width:640px;min-height:280px;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.16,1,.3,1);cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none}
 .card.flipped{transform:rotateY(180deg)}
 .card-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);padding:24px;display:flex;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .card-back{transform:rotateY(180deg);background:var(--surface);border-color:var(--accent-code)}
 
-/* ===== CARD FRONT ===== */
-.card-module-tag{display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-family:var(--font-mono);font-weight:600;margin-bottom:12px;width:fit-content}
+.card-module-tag{display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-family:var(--font-mono);font-weight:600;margin-bottom:10px;width:fit-content}
 .card-module-tag.A{background:rgba(88,166,255,.15);color:var(--module-A)}
 .card-module-tag.B{background:rgba(240,136,62,.15);color:var(--module-B)}
 .card-module-tag.C{background:rgba(210,168,0,.15);color:var(--module-C)}
 .card-module-tag.D{background:rgba(163,113,247,.15);color:var(--module-D)}
-.card-id{font-family:var(--font-mono);font-size:14px;color:var(--accent-code);margin-bottom:8px}
-.card-title{font-size:20px;font-weight:700;margin-bottom:12px;letter-spacing:-0.01em}
-.card-desc{font-size:14px;color:var(--text2);margin-bottom:16px;line-height:1.6}
+.card-id{font-family:var(--font-mono);font-size:14px;color:var(--accent-code);margin-bottom:6px}
+.card-title{font-size:20px;font-weight:700;margin-bottom:10px;letter-spacing:-0.01em}
+.card-desc{font-size:14px;color:var(--text2);margin-bottom:12px;line-height:1.6}
 .card-hint{font-size:12px;color:var(--text3);margin-top:auto;text-align:center;font-family:var(--font-mono);animation:pulse 2s infinite}
 .card-hint.flipped-hidden{display:none}
 @keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
 
-/* ===== CARD BACK (ANSWER) ===== */
-.answer-label{font-size:11px;color:var(--accent-code);font-family:var(--font-mono);margin-bottom:8px;text-transform:uppercase;letter-spacing:.1em}
-.answer-code{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:16px;font-family:var(--font-mono);font-size:14px;color:var(--accent-code);overflow-x:auto;white-space:pre-wrap;word-break:break-all;line-height:1.7;margin-bottom:16px}
+.answer-label{font-size:11px;color:var(--accent-code);font-family:var(--font-mono);margin-bottom:6px;text-transform:uppercase;letter-spacing:.1em}
+.answer-code{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:14px;font-family:var(--font-mono);font-size:14px;color:var(--accent-code);overflow-x:auto;white-space:pre-wrap;word-break:break-all;line-height:1.7;margin-bottom:12px}
 .answer-code .kw{color:#ff7b72}
 .answer-code .str{color:#a5d6ff}
 .answer-code .cmt{color:#6e7681;font-style:italic}
-.answer-explain{font-size:13px;color:var(--text2);line-height:1.7;border-left:2px solid var(--border);padding-left:12px}
+.answer-explain{font-size:12px;color:var(--text2);line-height:1.7;border-left:2px solid var(--border);padding-left:12px;margin-bottom:8px}
 
-/* ===== ACTION BUTTONS ===== */
-.card-actions{display:flex;gap:8px;justify-content:center;margin-top:8px}
+/* Collapsible */
+.collapse-section{margin-top:10px;border-top:1px solid var(--border);padding-top:8px}
+.collapse-header{display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:8px 0;font-family:var(--font-mono);font-size:12px;color:var(--text2);user-select:none;min-height:44px}
+.collapse-header:hover{color:var(--text)}
+.collapse-header .collapse-arrow{transition:transform .2s;font-size:10px}
+.collapse-header.open .collapse-arrow{transform:rotate(90deg)}
+.collapse-body{display:none;font-size:12px;color:var(--text2);line-height:1.7;padding:4px 0 8px}
+.collapse-body.open{display:block}
+.reasoning-step{margin-bottom:5px;padding-left:4px}
+.pipeline-diagram{font-family:var(--font-mono);font-size:10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px;white-space:pre;overflow-x:auto;line-height:1.4;color:var(--text3)}
+
+/* Buttons */
+.card-actions{display:flex;gap:8px;justify-content:center;margin-top:6px}
 .btn{padding:10px 24px;border-radius:var(--radius);border:none;cursor:pointer;font-family:var(--font-mono);font-size:13px;font-weight:600;transition:all .15s;user-select:none}
 .btn:active{transform:scale(.98)}
 .btn-wrong{background:var(--danger-bg);color:var(--danger);border:1px solid rgba(248,81,73,.3)}
@@ -110,88 +114,116 @@ header{padding:12px 0;border-bottom:1px solid var(--border);margin-bottom:16px}
 .btn-nav:disabled{opacity:.3;cursor:not-allowed}
 .btn-nav:active:not(:disabled){transform:scale(.98)}
 
-/* ===== NAVIGATION ===== */
-.nav-row{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:8px}
+.nav-row{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:6px}
 .nav-pos{font-family:var(--font-mono);font-size:12px;color:var(--text3);min-width:60px;text-align:center}
 
-/* ===== OVERVIEW MODE ===== */
+/* Overview */
 .overview-list{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
-@media(max-width:600px){.overview-list{grid-template-columns:1fr}}
 .overview-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;cursor:pointer;transition:all .15s}
 .overview-item:hover{border-color:var(--text3)}
 .overview-item.mastered{opacity:.4;border-color:transparent}
-.overview-item .oi-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.overview-item .oi-id{font-family:var(--font-mono);font-size:11px;color:var(--accent-code)}
+.overview-item .oi-header{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.overview-item .oi-id{font-family:var(--font-mono);font-size:10px;color:var(--accent-code)}
 .overview-item .oi-score{font-family:var(--font-mono);font-size:10px;color:var(--text3);margin-left:auto}
-.overview-item .oi-title{font-size:14px;font-weight:600;margin-bottom:4px}
-.overview-item .oi-answer{font-family:var(--font-mono);font-size:12px;color:var(--text3);padding:4px 8px;background:var(--bg);border-radius:4px;margin-top:6px;filter:blur(8px);transition:filter .3s}
+.overview-item .oi-title{font-size:13px;font-weight:600;margin-bottom:3px}
+.overview-item .oi-answer{font-family:var(--font-mono);font-size:11px;color:var(--text3);padding:4px 8px;background:var(--bg);border-radius:4px;margin-top:4px;filter:blur(8px);transition:filter .3s;min-height:44px;display:flex;align-items:center}
 .overview-item .oi-answer.revealed{filter:none;color:var(--accent-code)}
 .overview-item .oi-answer:hover{filter:none;color:var(--accent-code)}
 
-/* ===== TOAST ===== */
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 20px;font-family:var(--font-mono);font-size:12px;color:var(--text);z-index:20;opacity:0;pointer-events:none;transition:opacity .3s}
+/* Toast */
+.toast{position:fixed;bottom:max(24px,calc(env(safe-area-inset-bottom) + 12px));left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 20px;font-family:var(--font-mono);font-size:12px;color:var(--text);z-index:20;opacity:0;pointer-events:none;transition:opacity .3s}
 .toast.show{opacity:1}
+.error-toast{position:fixed;top:max(16px,calc(env(safe-area-inset-top) + 8px));left:50%;transform:translateX(-50%);background:var(--danger-bg);border:1px solid rgba(248,81,73,.3);color:var(--danger);padding:8px 18px;border-radius:var(--radius);font-family:var(--font-mono);font-size:12px;z-index:20;opacity:0;transition:opacity .3s}
+.error-toast.show{opacity:1}
 
-/* ===== EMPTY STATE ===== */
 .empty-state{text-align:center;padding:48px 24px;display:none}
 .empty-state.visible{display:block}
 .empty-state .empty-icon{font-size:48px;margin-bottom:12px;opacity:.5}
 .empty-state .empty-title{font-size:16px;font-weight:600;margin-bottom:8px}
 .empty-state .empty-desc{font-size:13px;color:var(--text3)}
 
-/* ===== ERROR STATE ===== */
-.error-toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--danger-bg);border:1px solid rgba(248,81,73,.3);color:var(--danger);padding:8px 18px;border-radius:var(--radius);font-family:var(--font-mono);font-size:12px;z-index:20;opacity:0;transition:opacity .3s}
-.error-toast.show{opacity:1}
-
-/* ===== STATS BAR ===== */
-.stats-bar{display:flex;gap:16px;font-family:var(--font-mono);font-size:11px;color:var(--text3);margin-bottom:8px;flex-wrap:wrap}
+.stats-bar{display:flex;gap:12px;font-family:var(--font-mono);font-size:11px;color:var(--text3);margin-bottom:6px;flex-wrap:wrap}
 .stats-bar .stat-val{color:var(--accent-code);font-weight:600}
 
-/* ===== FOOTER ===== */
-footer{text-align:center;padding:24px 0 12px;font-size:11px;color:var(--text3);margin-top:auto;border-top:1px solid var(--border)}
+/* ===== SECTION 2: PATTERNS ===== */
+.section-title{font-size:18px;font-weight:700;margin-bottom:14px;letter-spacing:-0.01em}
+.section-subtitle{font-size:15px;font-weight:600;margin:20px 0 10px;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:6px}
+
+.pattern-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.pattern-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;transition:all .15s}
+.pattern-card:hover{border-color:var(--accent-code)}
+.pattern-card .pattern-icon{font-size:22px;margin-bottom:6px}
+.pattern-card .pattern-name{font-size:14px;font-weight:700;margin-bottom:3px}
+.pattern-card .pattern-syntax{font-family:var(--font-mono);font-size:12px;color:var(--accent-code);background:var(--bg);padding:6px 10px;border-radius:4px;margin:8px 0}
+.pattern-card .pattern-count{font-size:10px;color:var(--text3)}
+.pattern-card .pattern-tip{font-size:11px;color:var(--text3);margin-top:4px;line-height:1.5}
+
+.flow-diagram{font-family:var(--font-mono);font-size:10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;white-space:pre;overflow-x:auto;line-height:1.5;color:var(--text2);margin-bottom:16px}
+
+.speed-trainer{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;text-align:center;margin-bottom:16px}
+.speed-trainer .trainer-desc{font-size:12px;color:var(--text2);margin-bottom:8px}
+.speed-trainer .trainer-code{font-family:var(--font-mono);font-size:12px;background:var(--bg);border-radius:6px;padding:14px;text-align:left;line-height:2;white-space:pre-wrap;margin:10px 0;color:var(--text2);cursor:pointer;user-select:none}
+.speed-trainer .trainer-code .code-line{padding:4px 8px;border-radius:3px;transition:background .15s}
+.speed-trainer .trainer-code .code-line:hover{background:rgba(255,255,255,.03)}
+.speed-trainer .trainer-code .code-line.found{background:rgba(0,255,136,.12);color:var(--accent-code)}
+.speed-trainer .trainer-code .code-line.wrong{background:rgba(248,81,73,.12)}
+.speed-trainer .trainer-timer{font-family:var(--font-mono);font-size:28px;color:var(--accent-code);margin:8px 0}
+.speed-trainer .trainer-result{font-size:12px;margin-top:6px;min-height:18px;font-family:var(--font-mono)}
+
+.exception-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.exception-card{background:var(--surface);border:1px solid var(--danger);border-radius:var(--radius);padding:16px}
+.exception-card .exception-label{font-size:10px;color:var(--danger);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px}
+.exception-card .exception-id{font-family:var(--font-mono);font-size:13px;color:var(--accent-code);margin-bottom:3px}
+.exception-card .exception-title{font-size:14px;font-weight:600;margin-bottom:6px}
+.exception-card .exception-answer{font-family:var(--font-mono);font-size:12px;color:var(--accent-code);background:var(--bg);padding:6px 10px;border-radius:4px;margin-bottom:6px}
+.exception-card .exception-logic{font-size:11px;color:var(--text3);line-height:1.5}
+
+/* Tip box */
+.tip-box{background:rgba(0,255,136,.05);border:1px solid rgba(0,255,136,.15);border-radius:var(--radius);padding:14px;margin-bottom:16px}
+.tip-box .tip-title{font-size:12px;color:var(--accent-code);font-family:var(--font-mono);margin-bottom:6px}
+.tip-box .tip-body{font-size:12px;color:var(--text2);line-height:1.7}
+
+footer{text-align:center;padding:20px 0 12px;font-size:11px;color:var(--text3);margin-top:auto;border-top:1px solid var(--border)}
 footer .gold-text{background:linear-gradient(90deg,#00cc66,#00ff88,#00cc66);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:600}
 
-/* ===== RESPONSIVE - iPhone 15 Pro Max (430px) & mobile ===== */
+/* Responsive */
 @media(max-width:480px){
-  body{padding:10px;padding-top:max(10px, env(safe-area-inset-top));padding-bottom:max(24px, env(safe-area-inset-bottom));padding-left:max(12px, env(safe-area-inset-left));padding-right:max(12px, env(safe-area-inset-right))}
-  .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
-  .tab{padding:10px 6px;font-size:11px;text-align:center;min-height:44px;display:flex;align-items:center;justify-content:center}
+  body{padding:10px;padding-top:max(10px,env(safe-area-inset-top));padding-bottom:max(24px,env(safe-area-inset-bottom));padding-left:max(10px,env(safe-area-inset-left));padding-right:max(10px,env(safe-area-inset-right))}
+  .section-nav-btn{font-size:12px;padding:8px 10px}
+  .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
+  .tab{padding:9px 4px;font-size:10px;text-align:center;min-height:44px;display:flex;align-items:center;justify-content:center}
   .tab .tab-count{display:none}
   .mode-switch{width:100%}
   .mode-btn{flex:1;text-align:center;padding:10px 14px;font-size:13px;min-height:44px}
-  .card-face{padding:18px}
-  .card-title{font-size:18px}
-  .card-desc{font-size:13px}
-  .card-hint{font-size:11px}
-  .answer-code{font-size:12px;padding:12px}
-  .answer-explain{font-size:12px}
-  .btn{padding:12px 28px;font-size:14px;min-height:44px;min-width:80px}
-  .btn-nav{padding:10px 18px;font-size:13px;min-height:44px}
+  .card-face{padding:16px}
+  .card-title{font-size:17px}
+  .card-desc{font-size:12px}
+  .card-hint{font-size:10px}
+  .answer-code{font-size:11px;padding:10px}
+  .answer-explain{font-size:11px}
+  .btn{padding:11px 22px;font-size:13px;min-height:44px;min-width:70px}
+  .btn-nav{padding:10px 16px;font-size:12px;min-height:44px}
   .nav-row{gap:8px}
   .overview-list{grid-template-columns:1fr;gap:8px}
-  .overview-item{padding:14px}
-  .overview-item .oi-answer{min-height:44px;display:flex;align-items:center}
-  .toast{bottom:max(24px, calc(env(safe-area-inset-bottom) + 12px))}
-  .error-toast{top:max(16px, calc(env(safe-area-inset-top) + 8px))}
-  .stats-bar{gap:8px;font-size:10px}
+  .pattern-grid{grid-template-columns:1fr}
+  .exception-cards{grid-template-columns:1fr}
+  .flow-diagram{font-size:8px;padding:10px}
+  .speed-trainer{padding:14px}
+  .trainer-code{font-size:10px;padding:10px}
+  .stats-bar{gap:6px;font-size:9px}
   .header-top{gap:6px}
-  .brand-text{font-size:16px}
-  .brand-sub{font-size:10px}
-  .progress-info{font-size:11px}
-  .card-scene{min-height:300px}
-  .card{min-height:260px}
+  .brand-text{font-size:15px}
+  .toolbar{font-size:10px;gap:4px}
 }
 
-/* Narrow phones (iPhone SE, etc) */
 @media(max-width:380px){
   .tabs{grid-template-columns:repeat(2,1fr)}
-  .card-title{font-size:16px}
-  .card-face{padding:14px}
-  .answer-code{font-size:11px;padding:10px}
-  .btn{padding:12px 20px;font-size:13px}
+  .card-title{font-size:15px}
+  .card-face{padding:12px}
+  .answer-code{font-size:10px;padding:8px}
+  .btn{padding:10px 16px;font-size:12px}
 }
 
-/* ===== REDUCED MOTION ===== */
 @media(prefers-reduced-motion:reduce){
   .card{transition:none}
   .card.flipped{transform:none}
@@ -209,10 +241,8 @@ footer .gold-text{background:linear-gradient(90deg,#00cc66,#00ff88,#00cc66);-web
 </head>
 <body>
 
-<!-- SKELETON -->
 <div class="skeleton" id="skeleton"></div>
 
-<!-- MAIN CONTENT (hidden during load) -->
 <main id="main" style="display:none">
 
 <header>
@@ -233,22 +263,35 @@ footer .gold-text{background:linear-gradient(90deg,#00cc66,#00ff88,#00cc66);-web
   </div>
 </header>
 
-<!-- MODE SWITCH -->
-<div class="mode-switch">
-  <button class="mode-btn active" data-mode="flashcard" id="modeFlashcard">闪卡模式</button>
-  <button class="mode-btn" data-mode="overview" id="modeOverview">一览模式</button>
+<!-- SECTION NAV -->
+<div class="section-nav">
+  <button class="section-nav-btn active" data-section="practice" id="navPractice">原题练习</button>
+  <button class="section-nav-btn" data-section="patterns" id="navPatterns">模式速成</button>
 </div>
 
-<!-- MODULE TABS -->
+<!-- ==================== SECTION 1: PRACTICE ==================== -->
+<div id="sectionPractice">
+
+<div class="mode-switch">
+  <button class="mode-btn active" data-mode="flashcard" id="modeFlashcard">闪卡</button>
+  <button class="mode-btn" data-mode="overview" id="modeOverview">一览</button>
+</div>
+
+<div class="toolbar">
+  <label><input type="checkbox" id="shuffleToggle" onchange="toggleShuffle(this.checked)"> 随机打乱</label>
+  <button class="btn-nav" id="speedReviewBtn" onclick="startSpeedReview()">3秒速览</button>
+  <span id="speedReviewStatus" style="display:none;color:var(--accent-code)">进行中...</span>
+</div>
+
 <div class="tabs" id="tabs">
   <button class="tab active" data-module="all">全部<span class="tab-count">19</span></button>
   <button class="tab" data-module="A">A:大模型<span class="tab-count">4</span></button>
   <button class="tab" data-module="B">B:视觉<span class="tab-count">4</span></button>
   <button class="tab" data-module="C">C:可视化<span class="tab-count">6</span></button>
   <button class="tab" data-module="D">D:集成<span class="tab-count">5</span></button>
+  <button class="tab" data-module="wrong">错题<span class="tab-count" id="wrongCount">0</span></button>
 </div>
 
-<!-- FLASHCARD VIEW -->
 <div id="flashcardView">
   <div class="card-scene">
     <div class="card" id="card" onclick="flipCard()">
@@ -259,11 +302,7 @@ footer .gold-text{background:linear-gradient(90deg,#00cc66,#00ff88,#00cc66);-web
         <div class="card-desc" id="cardDesc"></div>
         <div class="card-hint" id="cardHint">点击翻转查看答案</div>
       </div>
-      <div class="card-face card-back">
-        <div class="answer-label">answer</div>
-        <div class="answer-code" id="answerCode"></div>
-        <div class="answer-explain" id="answerExplain"></div>
-      </div>
+      <div class="card-face card-back" id="cardBack"></div>
     </div>
   </div>
   <div class="card-actions">
@@ -277,17 +316,45 @@ footer .gold-text{background:linear-gradient(90deg,#00cc66,#00ff88,#00cc66);-web
   </div>
 </div>
 
-<!-- OVERVIEW VIEW -->
 <div id="overviewView" style="display:none">
   <div class="overview-list" id="overviewList"></div>
 </div>
 
-<!-- EMPTY STATE -->
 <div class="empty-state" id="emptyState">
   <div class="empty-icon">-</div>
-  <div class="empty-title">该模块暂无题目</div>
-  <div class="empty-desc">请选择其他模块查看</div>
+  <div class="empty-title" id="emptyTitle">暂无题目</div>
+  <div class="empty-desc" id="emptyDesc"></div>
 </div>
+
+</div><!-- /sectionPractice -->
+
+<!-- ==================== SECTION 2: PATTERNS ==================== -->
+<div id="sectionPatterns" style="display:none">
+
+<div class="tip-box">
+  <div class="tip-title">比赛核心秘密</div>
+  <div class="tip-body">19道题中<strong>17道</strong>的答案, 就藏在TODO上方被注释掉的 <code style="background:var(--bg);padding:1px 6px;border-radius:3px;color:var(--accent-code)"># xxx = ... # 原代码</code> 行里。比赛时只需: <strong>找到TODO → 往上看 → 找到「原代码」→ 抄下来</strong>。只有A4和D3需要自己判断。</div>
+</div>
+
+<div class="section-subtitle">5种必考模式</div>
+<div class="pattern-grid" id="patternGrid"></div>
+
+<div class="section-subtitle">系统数据流图</div>
+<div class="flow-diagram" id="flowDiagram"></div>
+
+<div class="section-subtitle">"找原代码" 速度训练</div>
+<div class="speed-trainer">
+  <div class="trainer-desc">快速找到被注释的答案行并点击它 - 这就是比赛时的核心操作</div>
+  <div class="trainer-timer" id="trainerTimer">0.00s</div>
+  <div class="trainer-code" id="trainerCode" onclick="handleTrainerClick(event)"></div>
+  <div class="trainer-result" id="trainerResult"></div>
+  <button class="btn-nav" onclick="startTrainerRound()" style="margin-top:8px">换一题</button>
+</div>
+
+<div class="section-subtitle">例外记忆卡（无原代码可抄）</div>
+<div class="exception-cards" id="exceptionCards"></div>
+
+</div><!-- /sectionPatterns -->
 
 </main>
 
@@ -295,513 +362,593 @@ footer .gold-text{background:linear-gradient(90deg,#00cc66,#00ff88,#00cc66);-web
   <span class="gold-text">天玑识骨</span> · 具身智能多传感器融合应用赛 · 复赛备考
 </footer>
 
-<!-- TOAST -->
 <div class="toast" id="toast"></div>
 <div class="error-toast" id="errorToast"></div>
 
 <script>
-// ===== QUESTION DATA =====
+// ===== QUESTION DATA (19 questions with reasoning + pipeline) =====
 const QUESTIONS = [
-  // ---- MODULE A: 大模型目标分类 (llm_waste_classification_push.py) ----
+  // ---- MODULE A ----
   {
-    id: 'A1', module: 'A', score: 4,
-    title: '读取大模型返回的动作字符串',
-    desc: 'process()函数中, LLM返回的JSON已被eval()解析为字典result。请从result中取出action字符串赋值给text。',
-    context: 'result = eval(self.llm_result[...])\ntext = ""  # 原代码: text = result[\'action\']',
-    answer: "text = result['action']",
-    explanation: 'result 是字典, 键 "action" 存储类似 garbage_classification(\'food_waste\') 的字符串。参考 llm_waste_classification.py 第188行。'
+    id:'A1',module:'A',score:4,
+    title:'读取大模型返回的动作字符串',
+    desc:'process()中, LLM返回的JSON经eval()解析为字典result。请取出action字符串。',
+    answer:"text = result['action']",
+    explanation:'result是字典,键"action"存储类似 garbage_classification(\'food_waste\') 的字符串。参考 llm_waste_classification.py:188。',
+    reasoning:'1 看上一行: result = eval(...) → result 是 Python 字典\n2 往上看原代码注释: # text = result[\'action\']\n3 Python 字典取值: dict[\'键名\']\n4 所以: text = result[\'action\']',
+    pipeline:'[上游] agent_process 发布 llm_result (JSON字符串)\n         ↓ eval()\n[本TODO A1] result = {"action":"...","response":"..."}\n            text = result[\'action\']  ← 取出动作字符串\n         ↓\n[下游] A2: 用正则从 text 提取分类列表'
   },
   {
-    id: 'A2', module: 'A', score: 5,
-    title: '从 params 提取垃圾类别列表',
-    desc: '正则已匹配到 garbage_classification(...) 括号内的参数存于 params。请用正则提取引号内的垃圾类别名到 objects 列表。',
-    context: "params = match.group(1)  # e.g. 'food_waste', 'hazardous_waste'\nobjects = []  # 原代码: re.findall(r\"['\\\"]([^'\\\"]+)['\\\"]\", params)",
-    answer: 'objects = re.findall(r"[\'\\"]([^\'\\"]+)[\'\\"]", params)',
-    explanation: 're.findall 提取所有引号包裹的字符串, 返回列表如 [\'food_waste\', \'hazardous_waste\']。参考 llm_waste_classification.py 第198行。'
+    id:'A2',module:'A',score:5,
+    title:'从 params 中提取垃圾类别列表',
+    desc:'正则已匹配括号内参数存于params。请用正则提取引号内类别名。',
+    answer:'objects = re.findall(r"[\'\\"]([^\'\\"]+)[\'\\"]", params)',
+    explanation:'re.findall 提取所有引号包裹的字符串,返回列表如 [\'food_waste\',\'hazardous_waste\']。参考 llm_waste_classification.py:198。',
+    reasoning:'1 上一步 A1 拿到了 text = "garbage_classification(\'food_waste\')"\n2 上一行正则 match = re.search(pattern, text) 已匹配成功\n3 params = match.group(1) 拿到了括号内的参数部分\n4 现在需要把引号里的字符串提取出来 → re.findall\n5 原代码注释: # objects = re.findall(r"[\'\\"]([^\'\\"]+)[\'\\"]", params)',
+    pipeline:'[上游] A1: text = "garbage_classification(\'food_waste\',...)"\n         ↓ re.search(pattern, text)\n[本TODO A2] params = match.group(1)  # 括号内参数\n            objects = re.findall(...)  ← 提取类别列表\n         ↓\n[下游] D1: msgs.data = objects  传给 set_target 服务'
   },
   {
-    id: 'A3', module: 'A', score: 5,
-    title: '设置语音回复文本',
-    desc: 'LLM的response字段包含给用户的回复文本。请将其填入ROS2 String消息的data字段, 发布给TTS节点播报。',
-    context: "if 'response' in result:\n    msg.data = \"\"  # 原代码: msg.data = result['response']",
-    answer: "msg.data = result['response']",
-    explanation: "result['response'] 是 LLM 生成的回复 (如 '收到, 我马上收拾'), 通过 msg.data 传给 TTS 播报。参考 llm_waste_classification.py 第213行。"
+    id:'A3',module:'A',score:5,
+    title:'设置语音回复文本',
+    desc:'LLM的response字段含回复文本。填入ROS2 String消息的data字段。',
+    answer:"msg.data = result['response']",
+    explanation:'取result字典response键的值,发布给TTS节点播报。参考 llm_waste_classification.py:213。',
+    reasoning:'1 result 字典有两个键: "action" 和 "response"\n2 A1 取了 action, 现在要取 response\n3 原代码注释: # msg.data = result[\'response\']\n4 Python 字典取值: dict[\'键名\']\n5 msg 是 ROS2 String 消息, .data 是它的字符串字段',
+    pipeline:'[上游] result = {"action":"...","response":"收到,马上收拾"}\n         ↓\n[本TODO A3] msg.data = result[\'response\']  ← 取出回复文本\n         ↓\n[下游] self.tts_text_pub.publish(msg) → TTS节点播报语音'
   },
   {
-    id: 'A4', module: 'A', score: 6,
-    title: '关闭机械臂使能开关 (A模块测试)',
-    desc: 'A模块单独测试时机械臂不能动作。请设置 enable_sorting 为合适的值, 确保 D 模块分支不被执行。',
-    context: '# enable_sorting = True   # D模块联调时使用\nenable_sorting = False  # False = A模块关闭机械臂',
-    answer: 'enable_sorting = False',
-    explanation: 'A模块测试阶段必须为 False, 只有D模块最终联调经教师确认安全后才改为 True。这是唯一需要根据场景判断的题。'
+    id:'A4',module:'A',score:6,
+    title:'关闭机械臂使能开关',
+    desc:'A模块单独测试时机械臂不能动。设置 enable_sorting 为合适值。',
+    answer:'enable_sorting = False',
+    explanation:'A模块测试必须False。只有D模块联调经教师确认后才改为True。唯一需要场景判断的题。',
+    reasoning:'1 读 if enable_sorting: 分支, 里面是 D 模块的代码 (set_target + 启动抓取)\n2 A 模块单独测试时,不能执行 D 模块代码\n3 所以 enable_sorting 必须为 False\n4 原代码注释: # enable_sorting = True  # D模块联调时使用\n5 比赛时A模块测试填 False, 如果考D模块联调才填 True',
+    pipeline:'[场景判断]\n  A模块单独测试 → enable_sorting = False → 跳过D模块分支\n  D模块联调     → enable_sorting = True  → 执行 set_target + 机械臂动作\n  \n[注意] 这是唯一需要根据考试阶段判断的题!'
   },
-
-  // ---- MODULE B: 视觉模块/目标筛选 (waste_classification_push.py) ----
+  // ---- MODULE B ----
   {
-    id: 'B1', module: 'B', score: 5,
-    title: '补齐可回收物识别类别 (YOLO标签)',
-    desc: 'WASTE_CLASSES 字典中 recyclable_waste 的值为空元组。请填入三种可回收物对应的 YOLO 检测标签。',
-    context: "WASTE_CLASSES = {\n  'food_waste': ('BananaPeel', 'BrokenBones', 'Ketchup'),\n  'hazardous_waste': ('Marker', 'OralLiquidBottle', 'StorageBattery'),\n  'recyclable_waste': (),  # 需补齐\n  'residual_waste': ('Plate', 'CigaretteEnd', 'DisposableChopsticks'),\n}",
-    answer: "'recyclable_waste': ('PlasticBottle', 'Toothbrush', 'Umbrella'),",
-    explanation: '三种可回收物: 塑料瓶(PlasticBottle)、牙刷(Toothbrush)、雨伞(Umbrella)。参考 waste_classification.py 第33行。'
-  },
-  {
-    id: 'B2', module: 'B', score: 5,
-    title: '按垃圾大类展开识别类别列表',
-    desc: 'set_target_srv_callback() 中 request.data 是垃圾大类列表。请从对应字典中查询展开为 YOLO 检测标签。',
-    context: "target_list = []\nfor i in request.data:\n    target_list.extend(list({}.get(i, [])))  # 需修改 {} 为正确字典名",
-    answer: 'target_list.extend(list(WASTE_CLASSES.get(i, [])))',
-    explanation: 'WASTE_CLASSES 字典将垃圾大类映射到 YOLO 标签元组, .get(i, []) 安全查找。参考 waste_classification.py 第248行。'
+    id:'B1',module:'B',score:5,
+    title:'补齐可回收物识别类别',
+    desc:'WASTE_CLASSES中recyclable_waste为空元组。填入三种YOLO检测标签。',
+    answer:"'recyclable_waste': ('PlasticBottle', 'Toothbrush', 'Umbrella'),",
+    explanation:'塑料瓶(PlasticBottle)、牙刷(Toothbrush)、雨伞(Umbrella)。参考 waste_classification.py:35。',
+    reasoning:'1 WASTE_CLASSES 是 Python 字典,键=垃圾大类,值=YOLO标签元组\n2 其他三类已填好: food_waste/hazardous_waste/residual_waste\n3 recyclable_waste 的值是空元组 ()\n4 需要填写三种可回收物的 YOLO 标签名\n5 原代码注释: # \'recyclable_waste\': (\'PlasticBottle\', \'Toothbrush\', \'Umbrella\')',
+    pipeline:'[上游] YOLO 节点检测到物体,发布 class_name\n         ↓\n[本TODO B1] WASTE_CLASSES 字典定义映射关系\n              recyclable_waste → PlasticBottle/Toothbrush/Umbrella\n         ↓\n[下游] B2: set_target 时用 WASTE_CLASSES 展开类别列表'
   },
   {
-    id: 'B3', module: 'B', score: 5,
-    title: '判断识别类别是否在目标列表中',
-    desc: 'get_object_callback() 遍历 YOLO 检测结果。请判断当前物体的 class_name 是否在 self.target_list 中。',
-    context: "for i in objects:\n    target = [i.class_name, ...]\n    if False:  # 需修改为正确的成员判断\n        local_object_info = target",
-    answer: 'if i.class_name in self.target_list:',
-    explanation: '只有 YOLO 检测到的物体类别存在于 target_list 中时, 才将其作为候选抓取目标。参考 waste_classification.py 第423行。'
+    id:'B2',module:'B',score:5,
+    title:'按垃圾大类展开识别类别列表',
+    desc:'set_target_srv_callback()中,request.data是垃圾大类。从字典展开为YOLO标签。',
+    answer:'target_list.extend(list(WASTE_CLASSES.get(i, [])))',
+    explanation:'WASTE_CLASSES将大类映射到YOLO标签元组。参考 waste_classification.py:248。',
+    reasoning:'1 request.data 是列表,如 [\'recyclable_waste\']\n2 循环 for i in request.data 遍历每个大类\n3 需要从 WASTE_CLASSES 字典中查出对应的 YOLO 标签\n4 .get(i, []) - 如果 i 不在字典中,返回空列表\n5 list(...) 把元组转成列表, extend 追加到 target_list\n6 原代码注释: # target_list.extend(list(WASTE_CLASSES.get(i, [])))',
+    pipeline:'[上游] LLM节点调用 set_target 服务,传入 [\'recyclable_waste\']\n         ↓\n[本TODO B2] for i in request.data:\n              target_list.extend(list(WASTE_CLASSES.get(i, [])))\n         ↓\n[下游] self.target_list = [\'PlasticBottle\',\'Toothbrush\',\'Umbrella\']\n         传给 B3 做筛选判断'
   },
   {
-    id: 'B4', module: 'B', score: 5,
-    title: '深拷贝保存候选目标信息',
-    desc: '当选出候选目标后需保存其信息。请使用深拷贝防止后续修改影响已保存的目标数据。',
-    context: 'if local_target_object_info is not None:\n    self.target_object_info = None  # 需改为 copy.deepcopy(...)',
-    answer: 'self.target_object_info = copy.deepcopy(local_target_object_info)',
-    explanation: '必须 deepcopy, 因为 local_target_object_info 包含嵌套列表 (坐标、角度等), 浅拷贝会导致数据被意外修改。参考 waste_classification.py 第437行。'
-  },
-
-  // ---- MODULE C: 数据可视化接口 (app.py + warehouse.py) ----
-  {
-    id: 'C1', module: 'C', score: 5,
-    title: '从传感器服务获取超声波数据',
-    desc: 'get_ultrasonic_data() 目前返回 mock 数据。请调用 self.sensor_service 获取真实超声波传感器读数。',
-    context: "# ultrasonic_data = {'distance': 0, ...}  # mock\nultrasonic_data = ...  # 需改为 self.sensor_service.get_ultrasonic_data()",
-    answer: 'ultrasonic_data = self.sensor_service.get_ultrasonic_data()',
-    explanation: 'sensor_service 已在 __init__ 中初始化 (self.sensor_service = SensorService(...)), 直接调用其 get_ultrasonic_data() 方法。参考 app.py 第263行注释。'
+    id:'B3',module:'B',score:5,
+    title:'判断识别类别是否在目标列表中',
+    desc:'get_object_callback()遍历YOLO结果。判断class_name是否在self.target_list。',
+    answer:'if i.class_name in self.target_list:',
+    explanation:'Python成员判断用 in 关键字。参考 waste_classification.py:427。',
+    reasoning:'1 for i in objects 遍历 YOLO 检测到的每个物体\n2 i.class_name 是类名,如 "PlasticBottle"\n3 self.target_list 是 B2 设置的目标列表\n4 需要判断: 检测到的物体是否在我们想要抓取的目标中\n5 Python 成员判断: x in list → True/False\n6 原代码注释: # if i.class_name in self.target_list:',
+    pipeline:'[上游] YOLO 节点 → objects (检测到的物体列表)\n         B2 → self.target_list (目标类别列表)\n         ↓\n[本TODO B3] if i.class_name in self.target_list:  ← 筛选\n         ↓\n[下游] B4: 符合条件的物体作为候选目标,深拷贝保存'
   },
   {
-    id: 'C2', module: 'C', score: 5,
-    title: 'JSON 返回超声波距离值',
-    desc: '在 jsonify 返回值中填入超声波距离字段, 从 C1 获取的字典中取出 distance。',
-    context: "return jsonify({\n  'success': True,\n  'data': {\n    'distance': 0  # 需改为 ultrasonic_data['distance']\n  },\n  ...\n})",
-    answer: "'distance': ultrasonic_data['distance']",
-    explanation: 'ultrasonic_data 字典的 distance 键存储测距值 (单位 cm), 直接取出填入 JSON。参考 app.py 第270行注释。'
+    id:'B4',module:'B',score:5,
+    title:'深拷贝保存候选目标信息',
+    desc:'当选出候选目标后需保存信息。用深拷贝防止引用修改。',
+    answer:'self.target_object_info = copy.deepcopy(local_target_object_info)',
+    explanation:'必须deepcopy,因包含嵌套列表(坐标、角度等)。参考 waste_classification.py:437。',
+    reasoning:'1 local_target_object_info = [local_object_info, local_objects_list]\n2 这是一个嵌套列表: [[类名,序号,坐标,尺寸,角度], [...所有物体...]]\n3 如果直接用 = 赋值,后续修改 local_xxx 会影响 self.target_object_info\n4 必须用 copy.deepcopy() 创建完全独立的副本\n5 copy 模块已在文件顶部导入: import copy\n6 原代码注释: # self.target_object_info = copy.deepcopy(local_target_object_info)',
+    pipeline:'[上游] B3: 筛选出符合条件的候选目标\n         ↓\n[本TODO B4] self.target_object_info = copy.deepcopy(...)\n         ↓\n[下游] main() 主循环读取 self.target_object_info\n         计算世界坐标 → 抓取位姿 → 触发机械臂'
+  },
+  // ---- MODULE C ----
+  {
+    id:'C1',module:'C',score:5,
+    title:'从传感器服务获取超声波数据',
+    desc:'get_ultrasonic_data()返回mock数据。调用sensor_service获取真实数据。',
+    answer:'ultrasonic_data = self.sensor_service.get_ultrasonic_data()',
+    explanation:'sensor_service已在__init__中初始化。参考 app.py:263注释。',
+    reasoning:'1 看 __init__: self.sensor_service = SensorService(...)\n2 SensorService 类提供了 get_ultrasonic_data() 方法\n3 当前代码返回 mock 数据,需要改为调用真实服务\n4 Python 方法调用: self.对象.方法()\n5 原代码注释: # ultrasonic_data = self.sensor_service.get_ultrasonic_data()',
+    pipeline:'[上游] SensorService 初始化并连接到硬件传感器\n         ↓\n[本TODO C1] ultrasonic_data = self.sensor_service.get_ultrasonic_data()\n             返回: {"distance":15.5,"timestamp":...,"status":"ok"}\n         ↓\n[下游] C2: 从 ultrasonic_data 字典取出 distance 字段返回'
   },
   {
-    id: 'C3', module: 'C', score: 5,
-    title: '从传感器服务获取 DHT11 温湿度数据',
-    desc: 'get_dht11_data() 目前返回 mock 数据。请改为调用 sensor_service 获取真实温湿度读数。',
-    context: "# dht11_data = {'temperature': 0, 'humidity': 0, ...}  # mock\ndht11_data = ...  # 需改为 self.sensor_service.get_dht11_data()",
-    answer: 'dht11_data = self.sensor_service.get_dht11_data()',
-    explanation: '与 C1 同理, sensor_service 提供 get_dht11_data() 方法返回包含 temperature 和 humidity 的字典。参考 app.py 第234行注释。'
+    id:'C2',module:'C',score:5,
+    title:'JSON 返回超声波距离值',
+    desc:'在jsonify的data对象中填入distance字段。',
+    answer:"'distance': ultrasonic_data['distance']",
+    explanation:'从C1获取的字典取distance键。参考 app.py:270注释。',
+    reasoning:'1 C1 已拿到 ultrasonic_data 字典\n2 字典结构: {"distance":15.5,"timestamp":...,"status":"ok"}\n3 需要把 distance 值填入 JSON 响应\n4 Python 字典取值: dict[\'键名\']\n5 原代码注释: # \'distance\': ultrasonic_data[\'distance\']',
+    pipeline:'[上游] C1: ultrasonic_data = {"distance":15.5,...}\n         ↓\n[本TODO C2] \'distance\': ultrasonic_data[\'distance\']\n         ↓\n[下游] Flask jsonify → 浏览器显示距离值'
   },
   {
-    id: 'C4-1', module: 'C', score: 2.5,
-    title: 'JSON 返回温度值',
-    desc: '在 jsonify 的 data 对象中, 填入 temperature 字段, 从 C3 获取的字典取值。',
-    context: "'data': {\n  'temperature': 0,  # 需改为 dht11_data['temperature']\n  'humidity': 0\n}",
-    answer: "'temperature': dht11_data['temperature']",
-    explanation: '从 dht11_data 字典取出 temperature (单位摄氏度)。参考 app.py 第241行注释。'
+    id:'C3',module:'C',score:5,
+    title:'从传感器服务获取 DHT11 温湿度数据',
+    desc:'get_dht11_data()返回mock数据。调用sensor_service获取真实数据。',
+    answer:'dht11_data = self.sensor_service.get_dht11_data()',
+    explanation:'与C1同理,sensor_service提供get_dht11_data()。参考 app.py:234注释。',
+    reasoning:'1 sensor_service 同时管理超声波和 DHT11 传感器\n2 get_dht11_data() 返回 {"temperature":25.0,"humidity":60.0,...}\n3 当前是 mock 数据,改为调用真实方法\n4 原代码注释: # dht11_data = self.sensor_service.get_dht11_data()',
+    pipeline:'[上游] SensorService 连接到 DHT11 温湿度传感器\n         ↓\n[本TODO C3] dht11_data = self.sensor_service.get_dht11_data()\n             返回: {"temperature":25.0,"humidity":60.0,...}\n         ↓\n[下游] C4: 分别取出 temperature 和 humidity 字段'
   },
   {
-    id: 'C4-2', module: 'C', score: 2.5,
-    title: 'JSON 返回湿度值',
-    desc: '在 jsonify 的 data 对象中填入 humidity 字段。',
-    context: "'data': {\n  'temperature': dht11_data['temperature'],\n  'humidity': 0  # 需改为 dht11_data['humidity']\n}",
-    answer: "'humidity': dht11_data['humidity']",
-    explanation: '从 dht11_data 字典取出 humidity (百分比)。参考 app.py 第244行注释。'
+    id:'C4-1',module:'C',score:2.5,
+    title:'JSON 返回温度值',
+    desc:'在jsonify的data中填入temperature字段。',
+    answer:"'temperature': dht11_data['temperature']",
+    explanation:'从dht11_data字典取temperature键。参考 app.py:241注释。',
+    reasoning:'1 C3 拿到了 dht11_data 字典\n2 字典中有 temperature 和 humidity 两个字段\n3 现在填 temperature: dht11_data[\'temperature\']\n4 原代码注释: # \'temperature\': dht11_data[\'temperature\']',
+    pipeline:'[上游] C3: dht11_data = {"temperature":25.0,...}\n         ↓\n[本TODO C4-1] \'temperature\': dht11_data[\'temperature\']\n         ↓\n[下游] Flask jsonify → 浏览器显示温度'
   },
   {
-    id: 'C5', module: 'C', score: 5,
-    title: '计算仓库占用率',
-    desc: 'get_status() 中 usage_rate 当前为 0。请根据当前数量与容量计算百分比, 保留一位小数, 防除零。',
-    context: "# 'usage_rate': 0\n'usage_rate': _____  # 计算公式: round((current/capacity)*100, 1) if capacity else 0",
-    answer: "'usage_rate': round((self._data[i] / self._capacity) * 100, 1) if self._capacity else 0",
-    explanation: 'self._data[i] 是当前数量, self._capacity 是容量 (默认12)。round(..., 1) 保留一位小数, if-else 防除零。参考 warehouse.py 第33行注释。'
+    id:'C4-2',module:'C',score:2.5,
+    title:'JSON 返回湿度值',
+    desc:'在jsonify的data中填入humidity字段。',
+    answer:"'humidity': dht11_data['humidity']",
+    explanation:'从dht11_data字典取humidity键。参考 app.py:244注释。',
+    reasoning:'1 与 C4-1 同理\n2 字典取值: dht11_data[\'humidity\']\n3 原代码注释: # \'humidity\': dht11_data[\'humidity\']',
+    pipeline:'[上游] C3: dht11_data = {"humidity":60.0,...}\n         ↓\n[本TODO C4-2] \'humidity\': dht11_data[\'humidity\']\n         ↓\n[下游] Flask jsonify → 浏览器显示湿度'
   },
   {
-    id: 'C6', module: 'C', score: 5,
-    title: 'SSE 广播仓库更新事件 (4个子字段)',
-    desc: 'update_warehouse_quantity() 中需通过 SSE 广播仓库变更。请填入四个字段: warehouses, updated_warehouse, old_quantity, new_quantity。',
-    context: "self.sse_service.broadcast_event('message', {\n  'warehouses': [],           # 应填 warehouse_list\n  'updated_warehouse': None,  # 应填 warehouse_id\n  'old_quantity': None,       # 应填 old_quantity\n  'new_quantity': None        # 应填 quantity\n})",
-    answer: "'warehouses': warehouse_list,\n'updated_warehouse': warehouse_id,\n'old_quantity': old_quantity,\n'new_quantity': quantity",
-    explanation: '这四个变量在函数中均已定义: warehouse_list 从 get_status() 获取, warehouse_id/old_quantity/quantity 在执行流程中已赋值。参考 app.py 第362-381行注释。'
-  },
-
-  // ---- MODULE D: 多模态系统集成 ----
-  {
-    id: 'D1', module: 'D', score: 6,
-    title: '将目标类别写入 set_target 请求',
-    desc: 'ifenable_sorting 分支中, msgs.data 需要填入 A2 提取到的垃圾类别列表 objects。',
-    context: 'msgs = SetStringList.Request()\nmsgs.data = []  # 应填 objects',
-    answer: 'msgs.data = objects',
-    explanation: 'objects 是 A2 中正则提取的垃圾类别列表 (如 [\'recyclable_waste\'])。参考 llm_waste_classification.py 第202行。'
+    id:'C5',module:'C',score:5,
+    title:'计算仓库占用率',
+    desc:'get_status()中usage_rate为0。计算百分比,保留一位小数。',
+    answer:"'usage_rate': round((self._data[i] / self._capacity) * 100, 1) if self._capacity else 0",
+    explanation:'当前数量/容量×100,round保留1位小数。参考 warehouse.py:33注释。',
+    reasoning:'1 self._data[i] - 第 i 个仓库当前存放数量\n2 self._capacity - 每个仓库容量 (默认12)\n3 占用率 = (当前/容量) × 100%\n4 round(..., 1) 保留一位小数,如 33.3%\n5 if self._capacity else 0 - 防除零错误\n6 原代码注释: # \'usage_rate\': round((self._data[i]/self._capacity)*100,1) if self._capacity else 0',
+    pipeline:'[上游] 仓库数据: self._data = [3,0,5,2]\n         self._capacity = 12\n         ↓\n[本TODO C5] \'usage_rate\': round((3/12)*100,1) = 25.0%\n         ↓\n[下游] get_status() → JSON响应 → 前端看板展示占用率'
   },
   {
-    id: 'D2', module: 'D', score: 6,
-    title: '调用 set_target 服务',
-    desc: '使用节点封装的 send_request 方法, 异步调用 set_target 服务, 将目标类别传给视觉分拣节点。',
-    context: '# res = self.send_request(self.set_target_client, msgs)\nres = None  # 应改为调用 send_request',
-    answer: 'res = self.send_request(self.set_target_client, msgs)',
-    explanation: 'send_request() 是节点内封装的方法, 接收 client 和 request 两个参数, 返回服务响应。参考 llm_waste_classification.py 第203行。'
+    id:'C6',module:'C',score:5,
+    title:'SSE 广播仓库更新事件',
+    desc:'update_warehouse_quantity()中通过SSE广播变更。填4个子字段。',
+    answer:"'warehouses': warehouse_list,\n'updated_warehouse': warehouse_id,\n'old_quantity': old_quantity,\n'new_quantity': quantity",
+    explanation:'四个变量在函数中已定义。参考 app.py:362-381注释。',
+    reasoning:'1 broadcast_event(\'message\', {...}) - SSE广播函数\n2 需要告知前端: 哪批仓库数据变了\n3 warehouse_list - 从 get_status() 获取的最新仓库列表\n4 warehouse_id - 变更的仓库编号 (1-4)\n5 old_quantity - 变更前的数量\n6 quantity (即 new_quantity) - 变更后的数量\n7 这四个变量在函数执行流程中都已经计算好了',
+    pipeline:'[上游] update_warehouse_quantity() 收到 POST 请求\n         更新 self._data[warehouse_id-1] = quantity\n         ↓\n[本TODO C6] broadcast_event 四字段\n         ↓\n[下游] SSE客户端 (浏览器) 收到消息 → 看板自动刷新'
+  },
+  // ---- MODULE D ----
+  {
+    id:'D1',module:'D',score:6,
+    title:'将目标类别写入 set_target 请求',
+    desc:'ifenable_sorting分支中,msgs.data需要填入A2提取的垃圾类别列表。',
+    answer:'msgs.data = objects',
+    explanation:'objects是A2正则提取的类别列表。参考 llm_waste_classification.py:202。',
+    reasoning:'1 objects 在 A2 中已通过正则提取,如 [\'recyclable_waste\']\n2 msgs = SetStringList.Request() - ROS2 服务请求对象\n3 msgs.data 的类型是字符串列表\n4 把 objects 直接赋值给 msgs.data\n5 原代码注释: # msgs.data = objects',
+    pipeline:'[上游] A2: objects = [\'recyclable_waste\']\n         ↓\n[本TODO D1] msgs.data = objects  ← 填入服务请求\n         ↓\n[下游] D2: 调用 set_target 服务,将类别传给视觉节点'
   },
   {
-    id: 'D3', module: 'D', score: 6,
-    title: '启动真实分拣 (机械臂抓取)',
-    desc: '教师确认安全后, 将 start_msg.data 设为 True, 启动视觉-抓取-放置流水线。',
-    context: 'start_msg = SetBool.Request()\nstart_msg.data = False  # 应改为 True (联调时)',
-    answer: 'start_msg.data = True',
-    explanation: 'True 启动真实分拣, enable_transport 打开后视觉节点触发机械臂抓取。需教师确认安全后执行。参考 llm_waste_classification.py 第209行。'
+    id:'D2',module:'D',score:6,
+    title:'调用 set_target 服务',
+    desc:'用节点封装的send_request异步调用set_target服务。',
+    answer:'res = self.send_request(self.set_target_client, msgs)',
+    explanation:'send_request是节点内封装方法,接收client和request。参考 llm_waste_classification.py:203。',
+    reasoning:'1 self.set_target_client 在 __init__ 中已创建\n2 self.send_request() 是类内封装的异步服务调用方法\n3 参数: (client对象, 请求消息)\n4 返回: 服务响应 (含 success 字段)\n5 下一行 if getattr(res,\'success\',False) 检查调用是否成功\n6 原代码注释: # res = self.send_request(self.set_target_client, msgs)',
+    pipeline:'[上游] D1: msgs = SetStringList.Request(data=[\'recyclable_waste\'])\n         ↓\n[本TODO D2] res = self.send_request(self.set_target_client, msgs)\n         ↓\n[下游] waste_classification_push 节点收到 set_target 请求\n         → 更新 self.target_list → 开始筛选目标'
   },
   {
-    id: 'D4', module: 'D', score: 6,
-    title: '根据垃圾类别查找仓库编号',
-    desc: 'push_dashboard_data() 中需根据垃圾类别 target 查找对应的仓库 ID, 使用文件顶部定义的 WAREHOUSE_MAPPING 字典。',
-    context: "WAREHOUSE_MAPPING = {\n  'recyclable_waste': 1,\n  'hazardous_waste': 2,\n  'food_waste': 3,\n  'residual_waste': 4\n}\n# 使用: warehouse_id = 1  # 应改为 WAREHOUSE_MAPPING[target]",
-    answer: 'warehouse_id = WAREHOUSE_MAPPING[target]',
-    explanation: 'target 是垃圾类别字符串, WAREHOUSE_MAPPING 将其映射为 1-4 的仓库编号。参考 waste_classification_push.py 第354行注释和第51-56行定义。'
+    id:'D3',module:'D',score:6,
+    title:'启动真实分拣（机械臂抓取）',
+    desc:'教师确认安全后,将start_msg.data设为True启动抓取。',
+    answer:'start_msg.data = True',
+    explanation:'True启动分拣,需教师确认安全。与A4配对使用。参考 llm_waste_classification.py:209。',
+    reasoning:'1 start_msg = SetBool.Request() - Bool类型的ROS2服务请求\n2 .data 字段是布尔值\n3 True = 启动分拣 (enable_transport 打开)\n4 False = 关闭分拣\n5 D模块联调时,前面A4已设为True,这里也要True\n6 原代码注释: # start_msg.data = True',
+    pipeline:'[上游] D2: set_target 服务调用成功\n         ↓\n[本TODO D3] start_msg.data = True  ← 启动!\n         ↓\n[下游] self.send_request(self.start_client, start_msg)\n         → 视觉节点收到 enable_transport = True\n         → 机械臂开始抓取 → 放置 → 看板更新'
   },
   {
-    id: 'D5', module: 'D', score: 6,
-    title: '返回相机服务真实状态',
-    desc: 'health_check() 的 services 字段中 camera 当前为 False。请调用 camera_service.is_active() 获取真实运行状态。',
-    context: "'services': {\n  'camera': False,  # 应改为 self.camera_service.is_active()\n  'sensor': self.sensor_service.is_active(),\n  'sse': self.sse_service.is_running()\n}",
-    answer: "'camera': self.camera_service.is_active()",
-    explanation: 'camera_service 在 __init__ 中初始化, is_active() 返回布尔值表示相机是否正常运行。参考 app.py 第123行注释。'
+    id:'D4',module:'D',score:6,
+    title:'根据垃圾类别查找仓库编号',
+    desc:'push_dashboard_data()中用WAREHOUSE_MAPPING字典查找仓库ID。',
+    answer:'warehouse_id = WAREHOUSE_MAPPING[target]',
+    explanation:'target是类别字符串,WAREHOUSE_MAPPING映射为1-4。参考 push文件:51-56,354。',
+    reasoning:'1 文件顶部定义了 WAREHOUSE_MAPPING 字典:\n2 recyclable_waste→1, hazardous_waste→2, food_waste→3, residual_waste→4\n3 target 是已识别出的垃圾分类 (如 \'recyclable_waste\')\n4 直接字典取值: WAREHOUSE_MAPPING[target]\n5 原代码注释: # warehouse_id = WAREHOUSE_MAPPING[target]',
+    pipeline:'[上游] 机械臂放置完成,target = \'recyclable_waste\'\n         ↓\n[本TODO D4] warehouse_id = WAREHOUSE_MAPPING[target]  # = 1\n         ↓\n[下游] self.warehouse_counts[1] += 1\n         → requests.post 推送到 Flask 看板'
+  },
+  {
+    id:'D5',module:'D',score:6,
+    title:'返回相机服务真实状态',
+    desc:'health_check()中services.camera为False。调用is_active()获取真实状态。',
+    answer:"'camera': self.camera_service.is_active()",
+    explanation:'camera_service在__init__中初始化,is_active()返回布尔值。参考 app.py:123注释。',
+    reasoning:'1 __init__ 中: self.camera_service = CameraService(...)\n2 CameraService 提供了 is_active() 方法\n3 其他两个服务已正确调用: sensor_service.is_active() / sse_service.is_running()\n4 camera 这一行当前写死为 False, 需要改为调用方法\n5 原代码注释: # \'camera\': self.camera_service.is_active()',
+    pipeline:'[上游] CameraService 管理相机连接状态\n         ↓\n[本TODO D5] \'camera\': self.camera_service.is_active()  ← True/False\n         ↓\n[下游] /api/health 端点返回 → {"services":{"camera":true,...}}'
   }
 ];
 
 // ===== APP STATE =====
-const STORAGE_KEY = 'review-progress-v1';
-let mastered = new Set();       // Set of question ids that user marked "会了"
-let currentMode = 'flashcard';  // 'flashcard' | 'overview'
-let currentModule = 'all';      // 'all' | 'A' | 'B' | 'C' | 'D'
-let currentIndex = 0;           // Index within filtered list
-let filteredQuestions = [];     // Questions after module filter
+const STORAGE_KEY = 'review-progress-v2';
+let mastered = new Set();
+let currentSection = 'practice';
+let currentMode = 'flashcard';
+let currentModule = 'all';
+let currentIndex = 0;
+let filteredQuestions = [];
 let isFlipped = false;
+let shuffleEnabled = false;
+let speedReviewTimer = null;
+
+// ===== PATTERN DATA =====
+const PATTERNS = [
+  {icon:'{}',name:'字典取值',syntax:"dict['key']",count:'7题',questions:'A1 A3 C2 C4-1 C4-2 C6 D5',tip:'看到方括号取值的TODO,往上看被注释的"原代码"里一定写着key的名字'},
+  {icon:'()',name:'方法调用',syntax:'self.xxx.method()',count:'4题',questions:'C1 C3 D2 D5',tip:'看到方法调用的TODO,原代码里有完整的方法名和参数,直接抄'},
+  {icon:'in',name:'列表成员判断',syntax:'x in list',count:'1题',questions:'B3',tip:'判断某物是否在列表中,Python用 in 关键字'},
+  {icon:'=',name:'函数/赋值',syntax:'x = func(args)',count:'5题',questions:'A2 B2 B4 D1 D4',tip:'赋值或调用函数的TODO,答案通常在被注释的原代码行'},
+  {icon:'TF',name:'布尔赋值',syntax:'True / False',count:'2题',questions:'A4 D3',tip:'唯一需要自己判断的题! A模块测试=False, 联调=True'}
+];
+
+const EXCEPTIONS = [
+  {id:'A4',title:'关闭机械臂使能开关',answer:'enable_sorting = False',logic:'A模块单独测试时,机械臂不能动作 → False。只有D模块联调且教师确认安全后 → True。比赛时看题目要求!'},
+  {id:'D3',title:'启动真实分拣',answer:'start_msg.data = True',logic:'D模块集成时需启动抓取 → True。A模块测试时不执行到此处 (因为A4=False跳过了整个if分支)。'}
+];
+
+const FLOW_DIAGRAM = `
+ 语音输入
+    ↓
+[agent_process] → LLM 大模型
+    ↓ llm_result (JSON)
+┌─ 模块A: llm_waste_classification_push.py ──────────────┐
+│ A1: result = eval(...)     ← 解析JSON                  │
+│ A2: text = result['action'] ← 取动作字符串              │
+│ A3: objects = re.findall() ← 正则提取类别列表           │
+│ A4: msg.data = result['response'] ← TTS播报             │
+│ A4: enable_sorting = False ← A模块阶段保持关闭          │
+└────────────────────┬────────────────────────────────────┘
+                     ↓ set_target(objects)
+┌─ 模块B: waste_classification_push.py ──────────────────┐
+│ B1: WASTE_CLASSES 字典补齐回收物YOLO标签                │
+│ B2: set_target → 大类展开为YOLO标签列表                 │
+│ B3: if class_name in target_list → 筛选目标             │
+│ B4: deepcopy → 保存候选目标信息                         │
+└────────────────────┬────────────────────────────────────┘
+                     ↓ 触发机械臂抓取
+┌─ 机械臂动作 ───────────────────────────────────────────┐
+│ 识别目标 → 计算位姿 → pick → place → go_home           │
+└────────────────────┬────────────────────────────────────┘
+                     ↓ push_dashboard_data()
+┌─ 模块C: app.py + warehouse.py ─────────────────────────┐
+│ C1/C2: 超声波传感器数据 API (/api/ultrasonic/distance)  │
+│ C3/C4: DHT11温湿度传感器 API (/api/dht11/read)          │
+│ C5: 仓库占用率计算 (usage_rate)                         │
+│ C6: SSE广播仓库更新事件 (broadcast_event)               │
+└────────────────────┬────────────────────────────────────┘
+                     ↓
+┌─ 模块D: 系统集成 ──────────────────────────────────────┐
+│ D1: msgs.data = objects  ← 类别写入服务请求             │
+│ D2: send_request(set_target) ← 调用服务                 │
+│ D3: start_msg.data = True ← 启动分拣                    │
+│ D4: WAREHOUSE_MAPPING[target] ← 类别→仓库映射           │
+│ D5: camera_service.is_active() ← 健康检查相机状态       │
+└─────────────────────────────────────────────────────────┘
+`;
+
+// Speed trainer snippets (real competition code contexts)
+const TRAINER_SNIPPETS = [
+  {lines:['result = eval(self.llm_result[...])','# text = result[\"action\"]  # 原代码','text = \"\"  # TODO A1'],answerLine:1},
+  {lines:['params = match.group(1)','# objects = re.findall(r\"...\", params)  # 原代码','objects = []  # TODO A2'],answerLine:1},
+  {lines:['if \"response\" in result:','    # msg.data = result[\"response\"]  # 原代码','    msg.data = \"\"  # TODO A3'],answerLine:1},
+  {lines:['for i in request.data:','    # target_list.extend(list(WASTE_CLASSES.get(i, [])))  # 原代码','    target_list.extend(list({}.get(i, [])))  # TODO B2'],answerLine:1},
+  {lines:['for i in objects:','    target = [i.class_name, ...]','    # if i.class_name in self.target_list:  # 原代码','    if False:  # TODO B3'],answerLine:2},
+  {lines:['if local_target_object_info is not None:','    # self.target_object_info = copy.deepcopy(...)  # 原代码','    self.target_object_info = None  # TODO B4'],answerLine:1},
+  {lines:['# ultrasonic_data = self.sensor_service.get_ultrasonic_data()  # 原代码','ultrasonic_data = {\"distance\":0,...}  # TODO C1'],answerLine:0},
+  {lines:['# dht11_data = self.sensor_service.get_dht11_data()  # 原代码','dht11_data = {\"temperature\":0,...}  # TODO C3'],answerLine:0},
+  {lines:['msgs = SetStringList.Request()','# msgs.data = objects  # 原代码','msgs.data = []  # TODO D1'],answerLine:1},
+  {lines:['# warehouse_id = WAREHOUSE_MAPPING[target]  # 原代码','warehouse_id = 1  # TODO D4'],answerLine:0},
+];
+
+let trainerCurrent = null;
+let trainerStartTime = 0;
 
 // ===== INIT =====
-function init() {
+function init(){
   loadProgress();
   applyModuleFilter();
   updateAllUI();
-  // Hide skeleton, show main
+  renderPatterns();
+  document.getElementById('flowDiagram').textContent = FLOW_DIAGRAM;
+  renderExceptions();
+  startTrainerRound();
   document.getElementById('skeleton').classList.add('hidden');
   document.getElementById('main').style.display = '';
 }
 
-function loadProgress() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const arr = JSON.parse(raw);
-      mastered = new Set(arr);
-    }
-  } catch (e) {
-    showError('localStorage 读取失败, 进度可能丢失');
-  }
+function loadProgress(){
+  try{const raw=localStorage.getItem(STORAGE_KEY);if(raw)mastered=new Set(JSON.parse(raw));}catch(e){showError('localStorage读取失败');}
+}
+function saveProgress(){
+  try{localStorage.setItem(STORAGE_KEY,JSON.stringify([...mastered]));}catch(e){showError('localStorage写入失败');}
 }
 
-function saveProgress() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([...mastered]));
-  } catch (e) {
-    showError('localStorage 写入失败, 进度未保存');
-  }
+// ===== SECTION SWITCHING =====
+function switchSection(section){
+  currentSection = section;
+  document.getElementById('navPractice').classList.toggle('active',section==='practice');
+  document.getElementById('navPatterns').classList.toggle('active',section==='patterns');
+  document.getElementById('sectionPractice').style.display = section==='practice'?'':'none';
+  document.getElementById('sectionPatterns').style.display = section==='patterns'?'':'none';
+  if(section==='patterns') startTrainerRound();
 }
+document.getElementById('navPractice').addEventListener('click',()=>switchSection('practice'));
+document.getElementById('navPatterns').addEventListener('click',()=>switchSection('patterns'));
 
-function applyModuleFilter() {
-  if (currentModule === 'all') {
+// ===== FILTERING =====
+function applyModuleFilter(){
+  if(currentModule==='wrong'){
+    filteredQuestions = QUESTIONS.filter(q=>!mastered.has(q.id));
+  }else if(currentModule==='all'){
     filteredQuestions = [...QUESTIONS];
-  } else {
-    filteredQuestions = QUESTIONS.filter(q => q.module === currentModule);
+  }else{
+    filteredQuestions = QUESTIONS.filter(q=>q.module===currentModule);
   }
-  // Clamp index
-  if (filteredQuestions.length === 0) {
-    currentIndex = 0;
-  } else if (currentIndex >= filteredQuestions.length) {
-    currentIndex = filteredQuestions.length - 1;
-  }
+  if(shuffleEnabled) shuffleArray(filteredQuestions);
+  if(currentIndex>=filteredQuestions.length) currentIndex = Math.max(0,filteredQuestions.length-1);
+  if(filteredQuestions.length===0) currentIndex=0;
 }
+function shuffleArray(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}}
+function toggleShuffle(enabled){shuffleEnabled=enabled;applyModuleFilter();updateAllUI();}
 
-// ===== UI UPDATES =====
-function updateAllUI() {
+// ===== ALL UI =====
+function updateAllUI(){
   updateProgress();
   updateTabs();
   updateStats();
-  if (currentMode === 'flashcard') {
-    document.getElementById('flashcardView').style.display = '';
-    document.getElementById('overviewView').style.display = 'none';
-    updateFlashcard();
-  } else {
-    document.getElementById('flashcardView').style.display = 'none';
-    document.getElementById('overviewView').style.display = '';
-    updateOverview();
+  updateWrongCount();
+  if(currentModule==='wrong'&&filteredQuestions.length===0){
+    document.getElementById('flashcardView').style.display='none';
+    document.getElementById('overviewView').style.display='none';
+    document.getElementById('emptyState').classList.add('visible');
+    document.getElementById('emptyTitle').textContent='全部掌握!';
+    document.getElementById('emptyDesc').textContent='没有错题了,去其他模块看看吧';
+  }else if(filteredQuestions.length===0){
+    document.getElementById('flashcardView').style.display='none';
+    document.getElementById('overviewView').style.display='none';
+    document.getElementById('emptyState').classList.add('visible');
+    document.getElementById('emptyTitle').textContent='该模块暂无题目';
+    document.getElementById('emptyDesc').textContent='请选择其他模块';
+  }else{
+    document.getElementById('emptyState').classList.remove('visible');
+    if(currentMode==='flashcard'){
+      document.getElementById('flashcardView').style.display='';
+      document.getElementById('overviewView').style.display='none';
+      updateFlashcard();
+    }else{
+      document.getElementById('flashcardView').style.display='none';
+      document.getElementById('overviewView').style.display='';
+      updateOverview();
+    }
   }
-  updateEmptyState();
 }
 
-function updateProgress() {
-  const total = QUESTIONS.length;
-  const done = mastered.size;
-  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-  document.getElementById('progressLabel').textContent = `已掌握 ${done} / ${total}`;
-  document.getElementById('progressPct').textContent = `${pct}%`;
-  document.getElementById('progressFill').style.width = `${pct}%`;
+function updateProgress(){
+  const total=QUESTIONS.length,done=mastered.size,pct=total>0?Math.round(done/total*100):0;
+  document.getElementById('progressLabel').textContent=`已掌握 ${done} / ${total}`;
+  document.getElementById('progressPct').textContent=`${pct}%`;
+  document.getElementById('progressFill').style.width=`${pct}%`;
 }
-
-function updateTabs() {
-  document.querySelectorAll('#tabs .tab').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.module === currentModule);
-  });
+function updateTabs(){
+  document.querySelectorAll('#tabs .tab').forEach(btn=>btn.classList.toggle('active',btn.dataset.module===currentModule));
 }
-
-function updateStats() {
-  const total = filteredQuestions.length;
-  if (total === 0) {
-    document.getElementById('statsBar').innerHTML = '';
-    return;
-  }
-  const q = filteredQuestions[currentIndex];
-  const currentMastered = q ? mastered.has(q.id) : false;
-  const moduleMastered = filteredQuestions.filter(q => mastered.has(q.id)).length;
-  document.getElementById('statsBar').innerHTML =
-    `<span>当前: <span class="stat-val">${q ? '#' + q.id : '-'}</span></span>` +
-    `<span>状态: <span class="stat-val">${currentMastered ? '已掌握' : '学习中'}</span></span>` +
-    `<span>本组掌握: <span class="stat-val">${moduleMastered}/${total}</span></span>` +
-    `<span>得分: <span class="stat-val">${q ? q.score : 0}分</span></span>`;
+function updateStats(){
+  if(filteredQuestions.length===0){document.getElementById('statsBar').innerHTML='';return;}
+  const q=filteredQuestions[currentIndex];
+  const curMastered=q?mastered.has(q.id):false;
+  const modMastered=filteredQuestions.filter(q=>mastered.has(q.id)).length;
+  document.getElementById('statsBar').innerHTML=
+    `<span>当前:<span class="stat-val">${q?'#'+q.id:'-'}</span></span>`+
+    `<span>状态:<span class="stat-val">${curMastered?'已掌握':'学习中'}</span></span>`+
+    `<span>本组:<span class="stat-val">${modMastered}/${filteredQuestions.length}</span></span>`+
+    `<span>得分:<span class="stat-val">${q?q.score:0}分</span></span>`;
 }
-
-function updateEmptyState() {
-  const el = document.getElementById('emptyState');
-  if (filteredQuestions.length === 0) {
-    el.classList.add('visible');
-    document.getElementById('flashcardView').style.display = 'none';
-    document.getElementById('overviewView').style.display = 'none';
-  } else {
-    el.classList.remove('visible');
-  }
+function updateWrongCount(){
+  const count=QUESTIONS.filter(q=>!mastered.has(q.id)).length;
+  document.getElementById('wrongCount').textContent=count;
 }
 
 // ===== FLASHCARD =====
-function updateFlashcard() {
-  if (filteredQuestions.length === 0) return;
-  const q = filteredQuestions[currentIndex];
-  isFlipped = false;
+function updateFlashcard(){
+  if(filteredQuestions.length===0)return;
+  const q=filteredQuestions[currentIndex];
+  isFlipped=false;
   document.getElementById('card').classList.remove('flipped');
-
-  // Front
-  document.getElementById('cardModule').textContent = '模块 ' + q.module;
-  document.getElementById('cardModule').className = 'card-module-tag ' + q.module;
-  document.getElementById('cardId').textContent = '#' + q.id + ' · ' + q.score + '分';
-  document.getElementById('cardTitle').textContent = q.title;
-  document.getElementById('cardDesc').textContent = q.desc;
+  document.getElementById('cardModule').textContent='模块 '+q.module;
+  document.getElementById('cardModule').className='card-module-tag '+q.module;
+  document.getElementById('cardId').textContent='#'+q.id+' · '+q.score+'分';
+  document.getElementById('cardTitle').textContent=q.title;
+  document.getElementById('cardDesc').textContent=q.desc;
   document.getElementById('cardHint').classList.remove('flipped-hidden');
-
-  // Back (pre-set for flip)
-  document.getElementById('answerCode').innerHTML = highlightCode(q.answer);
-  document.getElementById('answerExplain').textContent = q.explanation;
-
-  // Nav
-  document.getElementById('navPos').textContent = `${currentIndex + 1} / ${filteredQuestions.length}`;
-  document.getElementById('btnPrev').disabled = currentIndex <= 0;
-  document.getElementById('btnNext').disabled = currentIndex >= filteredQuestions.length - 1;
-
+  // Card back
+  document.getElementById('cardBack').innerHTML=`
+    <div class="answer-label">answer</div>
+    <div class="answer-code">${highlightCode(q.answer)}</div>
+    <div class="answer-explain">${q.explanation}</div>
+    <div class="collapse-section">
+      <div class="collapse-header" onclick="toggleCollapse(this)">
+        <span>推理过程</span><span class="collapse-arrow">▶</span>
+      </div>
+      <div class="collapse-body">${formatReasoning(q.reasoning)}</div>
+    </div>
+    <div class="collapse-section">
+      <div class="collapse-header" onclick="toggleCollapse(this)">
+        <span>系统上下文</span><span class="collapse-arrow">▶</span>
+      </div>
+      <div class="collapse-body"><div class="pipeline-diagram">${q.pipeline}</div></div>
+    </div>`;
+  document.getElementById('navPos').textContent=`${currentIndex+1} / ${filteredQuestions.length}`;
+  document.getElementById('btnPrev').disabled=currentIndex<=0;
+  document.getElementById('btnNext').disabled=currentIndex>=filteredQuestions.length-1;
   updateStats();
 }
 
-function flipCard() {
-  if (filteredQuestions.length === 0) return;
-  isFlipped = !isFlipped;
-  document.getElementById('card').classList.toggle('flipped', isFlipped);
-  document.getElementById('cardHint').classList.toggle('flipped-hidden', isFlipped);
+function toggleCollapse(header){
+  header.classList.toggle('open');
+  header.nextElementSibling.classList.toggle('open');
+}
+function formatReasoning(text){
+  return text.split('\n').map(line=>`<div class="reasoning-step">${escapeHtml(line)}</div>`).join('');
 }
 
-function markRight() {
-  if (filteredQuestions.length === 0) return;
-  const q = filteredQuestions[currentIndex];
-  mastered.add(q.id);
-  saveProgress();
-  updateProgress();
-  updateStats();
-  showToast(`#${q.id} 已标记为掌握`);
+function flipCard(){
+  if(filteredQuestions.length===0)return;
+  isFlipped=!isFlipped;
+  document.getElementById('card').classList.toggle('flipped',isFlipped);
+  document.getElementById('cardHint').classList.toggle('flipped-hidden',isFlipped);
 }
-
-function markWrong() {
-  if (filteredQuestions.length === 0) return;
-  const q = filteredQuestions[currentIndex];
-  mastered.delete(q.id);
-  saveProgress();
-  updateProgress();
-  updateStats();
-  showToast(`#${q.id} 已标记为未掌握`);
+function markRight(){
+  if(filteredQuestions.length===0)return;
+  const q=filteredQuestions[currentIndex];mastered.add(q.id);saveProgress();
+  updateProgress();updateStats();updateWrongCount();showToast(`#${q.id} 已掌握`);
 }
-
-function nextCard() {
-  if (currentIndex < filteredQuestions.length - 1) {
-    currentIndex++;
-    updateFlashcard();
-    updateStats();
-  }
+function markWrong(){
+  if(filteredQuestions.length===0)return;
+  const q=filteredQuestions[currentIndex];mastered.delete(q.id);saveProgress();
+  updateProgress();updateStats();updateWrongCount();showToast(`#${q.id} 标记为未掌握`);
 }
-
-function prevCard() {
-  if (currentIndex > 0) {
-    currentIndex--;
-    updateFlashcard();
-    updateStats();
-  }
+function nextCard(){
+  if(currentIndex<filteredQuestions.length-1){currentIndex++;updateFlashcard();updateStats();}
+}
+function prevCard(){
+  if(currentIndex>0){currentIndex--;updateFlashcard();updateStats();}
 }
 
 // ===== OVERVIEW =====
-function updateOverview() {
-  const container = document.getElementById('overviewList');
-  container.innerHTML = filteredQuestions.map((q, i) => {
-    const isMastered = mastered.has(q.id);
-    return `
-      <div class="overview-item${isMastered ? ' mastered' : ''}" onclick="jumpToFlashcard(${i})">
-        <div class="oi-header">
-          <span class="oi-id" style="color:var(--module-${q.module})">#${q.id}</span>
-          <span class="oi-score">${q.score}分</span>
-        </div>
-        <div class="oi-title">${q.title}</div>
-        <div class="oi-answer" onclick="event.stopPropagation();this.classList.toggle('revealed')">
-          ${escapeHtml(q.answer)}
-        </div>
-      </div>`;
+function updateOverview(){
+  document.getElementById('overviewList').innerHTML=filteredQuestions.map((q,i)=>{
+    const m=mastered.has(q.id);
+    return `<div class="overview-item${m?' mastered':''}" onclick="jumpToFlashcard(${i})">
+      <div class="oi-header"><span class="oi-id" style="color:var(--module-${q.module})">#${q.id}</span><span class="oi-score">${q.score}分</span></div>
+      <div class="oi-title">${q.title}</div>
+      <div class="oi-answer" onclick="event.stopPropagation();this.classList.toggle('revealed')">${escapeHtml(q.answer)}</div>
+    </div>`;
   }).join('');
 }
+function jumpToFlashcard(index){currentIndex=index;switchMode('flashcard');updateAllUI();}
 
-function jumpToFlashcard(index) {
-  currentIndex = index;
-  currentMode = 'flashcard';
-  document.getElementById('modeFlashcard').classList.add('active');
-  document.getElementById('modeOverview').classList.remove('active');
+// ===== MODE / MODULE SWITCHING =====
+function switchMode(mode){
+  currentMode=mode;
+  document.getElementById('modeFlashcard').classList.toggle('active',mode==='flashcard');
+  document.getElementById('modeOverview').classList.toggle('active',mode==='overview');
   updateAllUI();
 }
+function switchModule(mod){
+  currentModule=mod;currentIndex=0;isFlipped=false;applyModuleFilter();updateAllUI();
+}
+document.getElementById('modeFlashcard').addEventListener('click',()=>switchMode('flashcard'));
+document.getElementById('modeOverview').addEventListener('click',()=>switchMode('overview'));
+document.querySelectorAll('#tabs .tab').forEach(btn=>btn.addEventListener('click',()=>switchModule(btn.dataset.module)));
 
-// ===== MODULE SWITCHING =====
-function switchModule(module) {
-  currentModule = module;
-  currentIndex = 0;
-  isFlipped = false;
-  applyModuleFilter();
-  updateAllUI();
+// ===== SPEED REVIEW =====
+function startSpeedReview(){
+  if(speedReviewTimer){stopSpeedReview();return;}
+  const btn=document.getElementById('speedReviewBtn'),status=document.getElementById('speedReviewStatus');
+  btn.textContent='停止';status.style.display='';
+  function cycle(){
+    if(!isFlipped){flipCard();speedReviewTimer=setTimeout(()=>{if(currentIndex<filteredQuestions.length-1){nextCard();cycle();}else{stopSpeedReview();}},1500);}
+    else{speedReviewTimer=setTimeout(cycle,100);}
+  }
+  cycle();
+}
+function stopSpeedReview(){
+  clearTimeout(speedReviewTimer);speedReviewTimer=null;
+  document.getElementById('speedReviewBtn').textContent='3秒速览';
+  document.getElementById('speedReviewStatus').style.display='none';
 }
 
-// ===== MODE SWITCHING =====
-function switchMode(mode) {
-  currentMode = mode;
-  document.getElementById('modeFlashcard').classList.toggle('active', mode === 'flashcard');
-  document.getElementById('modeOverview').classList.toggle('active', mode === 'overview');
-  updateAllUI();
+// ===== PATTERNS SECTION =====
+function renderPatterns(){
+  document.getElementById('patternGrid').innerHTML=PATTERNS.map(p=>`
+    <div class="pattern-card">
+      <div class="pattern-icon">${p.icon}</div>
+      <div class="pattern-name">${p.name}</div>
+      <div class="pattern-syntax">${escapeHtml(p.syntax)}</div>
+      <div class="pattern-count">出现 ${p.count} · ${p.questions}</div>
+      <div class="pattern-tip">${p.tip}</div>
+    </div>`).join('');
+}
+
+function renderExceptions(){
+  document.getElementById('exceptionCards').innerHTML=EXCEPTIONS.map(e=>`
+    <div class="exception-card">
+      <div class="exception-label">无原代码</div>
+      <div class="exception-id">#${e.id}</div>
+      <div class="exception-title">${e.title}</div>
+      <div class="exception-answer">${escapeHtml(e.answer)}</div>
+      <div class="exception-logic">${e.logic}</div>
+    </div>`).join('');
+}
+
+// ===== SPEED TRAINER =====
+function startTrainerRound(){
+  const snippet=TRAINER_SNIPPETS[Math.floor(Math.random()*TRAINER_SNIPPETS.length)];
+  trainerCurrent=snippet;trainerStartTime=performance.now();
+  document.getElementById('trainerTimer').textContent='0.00s';
+  document.getElementById('trainerResult').textContent='';
+  document.getElementById('trainerCode').innerHTML=snippet.lines.map((line,i)=>
+    `<div class="code-line${i===snippet.answerLine?' found':''}" data-line="${i}" style="${i===snippet.answerLine?'display:none':''}">${escapeHtml(line)}</div>`
+  ).join('');
+  // Show answer line hidden - user needs to click anywhere on the code block
+  // Actually, let's show all lines and let user click the right one
+  document.getElementById('trainerCode').innerHTML=snippet.lines.map((line,i)=>
+    `<div class="code-line" data-line="${i}">${escapeHtml(line)}</div>`
+  ).join('');
+}
+
+function handleTrainerClick(e){
+  if(!trainerCurrent)return;
+  const lineEl=e.target.closest('[data-line]');
+  if(!lineEl)return;
+  const clickedLine=parseInt(lineEl.dataset.line);
+  const elapsed=((performance.now()-trainerStartTime)/1000).toFixed(2);
+  if(clickedLine===trainerCurrent.answerLine){
+    document.getElementById('trainerTimer').textContent=elapsed+'s';
+    document.getElementById('trainerResult').innerHTML='<span style="color:var(--accent-code)">正确! 这就是"原代码"行 - 比赛时往上翻找到它,抄下来就是答案</span>';
+    lineEl.classList.add('found');
+    trainerCurrent=null;
+  }else{
+    document.getElementById('trainerResult').innerHTML='<span style="color:var(--danger)">不是这行。「原代码」行通常以 # 开头,包含 "原代码" 三个字</span>';
+    lineEl.classList.add('wrong');
+    setTimeout(()=>lineEl.classList.remove('wrong'),500);
+  }
 }
 
 // ===== HELPERS =====
-function highlightCode(code) {
-  // Simple syntax highlighting for Python code
-  let html = escapeHtml(code);
-  // Strings
-  html = html.replace(/(['"])([^'"]*)(['"])/g, '<span class="str">$1$2$3</span>');
-  // Comments
-  html = html.replace(/(#.+)$/gm, '<span class="cmt">$1</span>');
-  // Keywords
-  html = html.replace(/\b(if|else|elif|for|in|not|and|or|True|False|None|import|from|def|return|class|self|copy|re|result|params|match|objects|text|msg|msgs|res|start_msg|enable_sorting|dht11_data|ultrasonic_data|warehouse_list|warehouse_id|old_quantity|new_quantity|quantity|target)\b/g,
-    '<span class="kw">$1</span>');
+function highlightCode(code){
+  let html=escapeHtml(code);
+  html=html.replace(/(['"])([^'"]*)(['"])/g,'<span class="str">$1$2$3</span>');
+  html=html.replace(/(#.+)$/gm,'<span class="cmt">$1</span>');
+  html=html.replace(/\b(if|else|elif|for|in|not|and|or|True|False|None|import|from|def|return|class|self|copy|re|result|params|match|objects|text|msg|msgs|res|start_msg|enable_sorting|dht11_data|ultrasonic_data|warehouse_list|warehouse_id|old_quantity|new_quantity|quantity|target|round|list|extend|findall|deepcopy|get|WASTE_CLASSES|WAREHOUSE_MAPPING)\b/g,'<span class="kw">$1</span>');
   return html;
 }
+function escapeHtml(str){const d=document.createElement('div');d.textContent=str;return d.innerHTML;}
+function showToast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(el._timeout);el._timeout=setTimeout(()=>el.classList.remove('show'),2000);}
+function showError(msg){const el=document.getElementById('errorToast');el.textContent=msg;el.classList.add('show');clearTimeout(el._timeout);el._timeout=setTimeout(()=>el.classList.remove('show'),4000);}
 
-function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
-
-function showToast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  clearTimeout(el._timeout);
-  el._timeout = setTimeout(() => el.classList.remove('show'), 2000);
-}
-
-function showError(msg) {
-  const el = document.getElementById('errorToast');
-  el.textContent = msg;
-  el.classList.add('show');
-  clearTimeout(el._timeout);
-  el._timeout = setTimeout(() => el.classList.remove('show'), 4000);
-}
-
-// ===== EVENT LISTENERS =====
-document.getElementById('modeFlashcard').addEventListener('click', () => switchMode('flashcard'));
-document.getElementById('modeOverview').addEventListener('click', () => switchMode('overview'));
-
-document.querySelectorAll('#tabs .tab').forEach(btn => {
-  btn.addEventListener('click', () => switchModule(btn.dataset.module));
-});
-
-// Keyboard shortcuts
-document.addEventListener('keydown', (e) => {
-  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-  switch (e.key) {
-    case 'ArrowRight': nextCard(); break;
-    case 'ArrowLeft': prevCard(); break;
-    case ' ': case 'Enter': e.preventDefault(); flipCard(); break;
-    case 'y': markRight(); break;
-    case 'n': markWrong(); break;
+// ===== KEYBOARD =====
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;
+  if(currentSection!=='practice')return;
+  switch(e.key){
+    case'ArrowRight':nextCard();break;case'ArrowLeft':prevCard();break;
+    case' ':_case'Enter':e.preventDefault();flipCard();break;
+    case'y':markRight();break;case'n':markWrong();break;
   }
 });
 
-// Touch swipe for flashcard (iPhone gesture)
+// ===== TOUCH SWIPE =====
 (function(){
-  const card = document.getElementById('card');
-  let startX = 0, startY = 0, moved = false;
-  const SWIPE_THRESHOLD = 60;
-  const TAP_THRESHOLD = 10;
-
-  card.addEventListener('touchstart', function(e) {
-    startX = e.touches[0].clientX;
-    startY = e.touches[0].clientY;
-    moved = false;
-  }, {passive: true});
-
-  card.addEventListener('touchmove', function(e) {
-    if (!startX) return;
-    const dx = e.touches[0].clientX - startX;
-    const dy = e.touches[0].clientY - startY;
-    if (Math.abs(dx) > TAP_THRESHOLD || Math.abs(dy) > TAP_THRESHOLD) {
-      moved = true;
+  const card=document.getElementById('card');let sx=0,sy=0,moved=false;
+  card.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;moved=false;},{passive:true});
+  card.addEventListener('touchmove',e=>{
+    if(!sx)return;const dx=e.touches[0].clientX-sx,dy=e.touches[0].clientY-sy;
+    if(Math.abs(dx)>10||Math.abs(dy)>10)moved=true;
+    if(Math.abs(dx)>10&&Math.abs(dx)>Math.abs(dy)*1.5){card.style.transform=isFlipped?`rotateY(180deg) translateX(${dx/5}px)`:`translateX(${dx/5}px)`;card.style.transition='none';}
+  },{passive:true});
+  card.addEventListener('touchend',e=>{
+    card.style.transition='transform .5s cubic-bezier(.16,1,.3,1)';
+    if(!moved){flipCard();}else{
+      const dx=(e.changedTouches[0]||{clientX:sx}).clientX-sx;
+      if(Math.abs(dx)>60){if(dx>0){markRight();}else{markWrong();}}
     }
-    // Live tilt feedback during swipe
-    if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-      const tilt = Math.max(-15, Math.min(15, dx / 10));
-      card.style.transform = isFlipped
-        ? `rotateY(180deg) translateX(${dx/5}px)`
-        : `translateX(${dx/5}px)`;
-      card.style.transition = 'none';
-    }
-  }, {passive: true});
-
-  card.addEventListener('touchend', function(e) {
-    card.style.transition = 'transform .5s cubic-bezier(.16,1,.3,1)';
-    if (!moved) {
-      // Pure tap - flip card
-      flipCard();
-    } else {
-      const dx = (e.changedTouches[0] || {clientX: startX}).clientX - startX;
-      // Horizontal swipe only (dominant axis must be X)
-      if (Math.abs(dx) > SWIPE_THRESHOLD) {
-        if (dx > 0) { markRight(); showToast('已掌握'); }
-        else { markWrong(); showToast('未掌握'); }
-      }
-    }
-    // Reset card position
-    card.style.transform = '';
-    void card.offsetWidth;
-    card.style.transform = isFlipped ? 'rotateY(180deg)' : '';
-    startX = 0; startY = 0;
-    moved = false;
+    card.style.transform='';void card.offsetWidth;card.style.transform=isFlipped?'rotateY(180deg)':'';
+    sx=0;sy=0;moved=false;
   });
 })();
 
